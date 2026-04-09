@@ -5,7 +5,7 @@
 | 구분 | 연결 링크 |
 | :--- | :--- |
 | **Figma 디자인** | [피그마 프로젝트 바로가기](https://www.figma.com/design/ModTd0k1VlnuTcQsYxha19/%EC%A1%B8%EC%8A%A43?node-id=88-254) |
-| **서비스 프로토타입** | [로컬 index.html 실행](https://www.google.com/search?q=file:///Users/jeonjei/Desktop/%25E1%2584%2589%25E1%2585%25B3%25E1%2586%25A8/index.html) |
+| **서비스 프로토타입** | [로컬 index.html 실행](http://localhost:9000/index.html) |
 
 -----
 
