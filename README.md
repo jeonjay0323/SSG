@@ -3,6 +3,7 @@
 
 [ 문서 ]
 - ServiceMaster : 서비스 개요
+- BoothPlan : 전시 개요
 
 [ 폴더 ]
 - PRD : 서비스 기능 상세 문서
