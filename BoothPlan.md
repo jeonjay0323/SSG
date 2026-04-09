@@ -66,7 +66,7 @@
 
 ---
 
-## 5. 연출 기술 스택 (Technical Elements) 🛠️
+## 5. 연출 기술 스택 (Technical Elements)
 
 | 구분 | 적용 기술 및 도구 |
 | :--- | :--- |
