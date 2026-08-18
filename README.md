@@ -108,4 +108,4 @@ gcloud run deploy ssg-theater --source . --region us-central1 \
 
 ---
 
-과거 기획 문서(01_Service ~ 사업계획서)는 `archive/planning-docs` 브랜치에 있다.
+과거 기획 문서(01_Service ~ 사업계획서)는 `archive` 브랜치에 있다.
