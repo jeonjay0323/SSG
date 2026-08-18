@@ -1,0 +1,417 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>슥 · 한 줄 극장 — 상영</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css" />
+<link rel="preload" as="font" type="font/woff2" crossorigin href="https://fastly.jsdelivr.net/gh/projectnoonnu/2408-3@1.0/Paperlogy-7Bold.woff2" />
+<style>
+  /* ── SSG-Demo 디자인 시스템 ─────────────────────────────
+     영상 영역만 검정 — 레터박스는 어느 테마든 검정이어야 한다. */
+  @font-face{font-family:'Paperlogy';font-weight:400;src:url('https://fastly.jsdelivr.net/gh/projectnoonnu/2408-3@1.0/Paperlogy-4Regular.woff2') format('woff2');font-display:swap;}
+  @font-face{font-family:'Paperlogy';font-weight:500;src:url('https://fastly.jsdelivr.net/gh/projectnoonnu/2408-3@1.0/Paperlogy-5Medium.woff2') format('woff2');font-display:swap;}
+  @font-face{font-family:'Paperlogy';font-weight:700;src:url('https://fastly.jsdelivr.net/gh/projectnoonnu/2408-3@1.0/Paperlogy-7Bold.woff2') format('woff2');font-display:swap;}
+
+  :root{
+    /* SSG-Demo 토큰의 다크 변형 */
+    --surface:#121214; --surface-container:#1a1a1c; --white:#1a1a1c;
+    --chacole:#f2f2f4; --on-surface:#f2f2f4;
+    --dust:#8e8e93; --outline-light:#2e2e33; --outline-dark:#525252;
+    --primary:#a100ff; --violet:#a100ff; --violet-text:#c07bff;
+    --accent:#00a43e; --black:#000;
+    --brand:'Paperlogy','Pretendard',sans-serif;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  html,body{height:100%;overflow:hidden}
+  body{
+    background:var(--surface);color:var(--chacole);
+    font-family:'Pretendard',-apple-system,sans-serif;font-size:14px;line-height:1.7;
+    display:grid;grid-template-columns:1fr 330px;grid-template-rows:1fr 56px;
+    grid-template-areas:"main list" "foot foot";
+  }
+  #main{grid-area:main;position:relative;background:var(--black);overflow:hidden}
+
+  /* ── 단계 배지 ── */
+  #phase{
+    position:absolute;top:24px;left:28px;z-index:5;display:flex;align-items:center;gap:6px;
+    padding:4px 8px;border-radius:4px;background:rgba(18,18,20,.9);
+    font-family:var(--brand);font-size:12px;color:var(--on-surface);
+  }
+  #phase .dot{width:6px;height:6px;border-radius:50%;background:var(--violet);
+              animation:blink 1.5s ease-in-out infinite}
+  #phase b{color:var(--violet-text);font-variant-numeric:tabular-nums;font-weight:500}
+  @keyframes blink{0%,100%{opacity:1}50%{opacity:.25}}
+
+  /* ── 재생 뷰 ── */
+  .view{position:absolute;inset:0;opacity:0;pointer-events:none;transition:opacity .4s}
+  .view.on{opacity:1;pointer-events:auto}
+  #playImg{width:100%;height:100%;object-fit:contain;display:none;background:var(--black)}
+  .layer{
+    position:absolute;inset:0;width:100%;height:100%;object-fit:contain;background:var(--black);
+    opacity:0;transition:opacity var(--xfade,420ms) ease;
+  }
+  .layer.on{opacity:1}
+  #skel{
+    position:absolute;inset:0;display:none;align-items:center;justify-content:center;
+    flex-direction:column;gap:20px;background:var(--surface-container);
+  }
+  #skel .box{
+    width:46%;aspect-ratio:16/9;border:1px dashed var(--outline-light);border-radius:4px;
+    display:flex;align-items:center;justify-content:center;color:var(--dust);
+    font-family:var(--brand);font-size:14px;
+  }
+  #skel .lb{font-family:var(--brand);font-size:18px;color:var(--dust)}
+
+  #cap{
+    position:absolute;left:0;right:0;bottom:0;padding:120px 8% 52px;text-align:center;
+    background:linear-gradient(to top,rgba(0,0,0,.85) 32%,transparent);
+  }
+  #capText{font-family:var(--brand);font-weight:700;font-size:30px;color:#fff;
+           line-height:1.45;text-shadow:0 2px 24px rgba(0,0,0,.9);min-height:44px}
+
+  /* ── 투표 뷰 ── */
+  #vote{display:flex;flex-direction:column;padding:78px 40px 34px;gap:20px;background:var(--surface)}
+  #vote h1{font-family:var(--brand);font-weight:700;font-size:28px;
+           color:var(--on-surface);text-align:center}
+  #vote .grid{flex:1;display:grid;gap:16px;min-height:0}
+  .vc{
+    display:flex;flex-direction:column;border:1px solid var(--outline-light);border-radius:4px;
+    overflow:hidden;background:var(--surface-container);transition:border-color .4s,transform .4s;
+  }
+  .vc.lead{border-color:var(--violet);box-shadow:0 0 0 1px var(--violet);transform:translateY(-5px)}
+  .vc .m{flex:1;min-height:0;background:var(--black);position:relative}
+  .vc .m video,.vc .m img{width:100%;height:100%;object-fit:cover;display:block}
+  .vc .m .ph{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
+             color:var(--dust);font-size:13px}
+  .vc .b{padding:14px 15px 16px}
+  .vc .tx{font-size:15px;line-height:1.6;min-height:48px;color:var(--chacole)}
+  .vc .bar{margin-top:11px;height:6px;border-radius:4px;background:var(--outline-light);overflow:hidden}
+  .vc .bar i{display:block;height:100%;background:var(--violet);width:0;transition:width .6s ease}
+  .vc .nv{margin-top:7px;display:flex;justify-content:space-between;
+          font-family:var(--brand);font-size:12px;color:var(--dust)}
+  .vc .nv b{color:var(--violet-text);font-size:16px;font-variant-numeric:tabular-nums}
+
+  /* ── 대기 / 생성 뷰 ── */
+  .center{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;
+          background:var(--surface);padding:24px;overflow:hidden}
+  .center .big{font-family:var(--brand);font-weight:700;
+               font-size:clamp(40px,5vw,72px);color:var(--on-surface)}
+  .center .h{font-family:var(--brand);font-weight:700;
+             font-size:clamp(20px,2.2vw,28px);color:var(--on-surface);text-align:center}
+  .center .s{font-family:var(--brand);font-size:14px;color:var(--dust);
+             line-height:1.8;text-align:center}
+  .url{
+    margin-top:4px;padding:10px 20px;border:1px solid var(--outline-light);border-radius:4px;
+    background:var(--surface-container);font-family:ui-monospace,monospace;
+    font-size:clamp(11px,1.1vw,14px);color:var(--violet-text);
+    max-width:100%;overflow-wrap:anywhere;text-align:center;
+  }
+  /* 부스 대형 화면 기준이지만 창이 좁아도 넘치지 않게 */
+  /* 부스는 와이드 화면 — 항상 가로 3열을 유지하고 폭에 맞춰 줄어들게 한다 */
+  .posters{display:flex;gap:16px;margin-top:22px;width:100%;
+           padding:0 32px;justify-content:center;flex-wrap:nowrap}
+  .posters .p{flex:1 1 0;min-width:0;max-width:320px;
+              border:1px solid var(--outline-light);border-radius:4px;
+              overflow:hidden;background:var(--surface-container)}
+  .posters .p .t{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .posters .p img{width:100%;aspect-ratio:16/9;object-fit:cover;display:block}
+  .posters .p .t{padding:10px 12px;font-family:var(--brand);font-weight:700;
+                 font-size:14px;color:var(--on-surface)}
+
+  .gens{display:flex;flex-direction:column;gap:10px;margin-top:8px;width:min(620px,72%)}
+  .gen{
+    display:flex;align-items:center;gap:12px;padding:12px 15px;
+    border:1px solid var(--outline-light);border-radius:4px;background:var(--surface-container);font-size:14px;
+  }
+  .gen .sp{width:14px;height:14px;flex:none;border:2px solid var(--outline-light);
+           border-top-color:var(--violet);border-radius:50%;animation:spin .9s linear infinite}
+  .gen .ok{width:14px;height:14px;flex:none;border-radius:50%;background:var(--accent)}
+  .gen .t{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+  .gen .p{font-family:var(--brand);font-size:12px;color:var(--dust);flex:none}
+  @keyframes spin{to{transform:rotate(360deg)}}
+
+  /* ── 우측 목록 ── */
+  #list{grid-area:list;background:var(--surface-container);border-left:1px solid var(--outline-light);
+        display:flex;flex-direction:column;overflow:hidden}
+  .lh{padding:18px 16px 12px;border-bottom:1px solid var(--outline-light);
+      display:flex;justify-content:space-between;align-items:baseline}
+  .lh .t{font-family:var(--brand);font-size:12px;color:var(--dust)}
+  .lh .c{font-family:var(--brand);font-size:12px;color:var(--violet-text)}
+  #scenes{flex:1;overflow-y:auto;padding:12px}
+  #scenes::-webkit-scrollbar{width:5px}
+  #scenes::-webkit-scrollbar-thumb{background:var(--outline-light);border-radius:4px}
+  .sc{border:1px solid var(--outline-light);border-radius:4px;overflow:hidden;
+      background:var(--surface-container);margin-bottom:12px;transition:border-color .3s}
+  .sc.playing{border-color:var(--violet);box-shadow:0 0 0 1px var(--violet)}
+  .sc .th{position:relative;width:100%;aspect-ratio:16/9;background:var(--black);
+          display:flex;align-items:center;justify-content:center}
+  .sc .th img,.sc .th video{width:100%;height:100%;object-fit:cover;display:block}
+  .sc .th.sk{background:var(--surface-container);color:var(--dust);
+             font-family:var(--brand);font-size:12px}
+  .sc .n{position:absolute;top:6px;left:6px;padding:2px 6px;border-radius:4px;
+         background:rgba(18,18,20,.85);color:var(--on-surface);font-family:var(--brand);font-size:11px}
+  .sc .n.fx{background:rgba(18,18,20,.7);color:var(--dust)}
+  .sc .bd{padding:9px 11px 11px}
+  .sc .cp{font-size:13px;line-height:1.6;color:var(--chacole)}
+  .sc .mt{margin-top:5px;font-family:var(--brand);font-size:11px;color:var(--dust)}
+
+  #foot{grid-area:foot;border-top:1px solid var(--outline-light);background:var(--surface-container);
+        display:flex;align-items:center;justify-content:space-between;
+        padding:0 24px;font-family:var(--brand);font-size:13px;color:var(--dust)}
+  #foot b{color:var(--violet-text);font-size:18px;font-weight:700;margin-right:4px}
+  .sp2{font-family:ui-monospace,monospace;font-size:11px;color:var(--dust)}
+</style>
+</head>
+<body>
+
+<section id="main">
+  <div id="phase"><span class="dot"></span><span id="phaseText"></span></div>
+
+  <!-- 재생 -->
+  <div class="view" id="vPlay">
+    <video id="playA" class="layer" muted playsinline></video>
+    <video id="playB" class="layer" muted playsinline></video>
+    <img id="playImg" alt="">
+    <div id="skel">
+      <div class="lb" id="skelLabel"></div>
+      <div class="box">아직 만들어지지 않은 장면</div>
+    </div>
+    <div id="cap"><div id="capText"></div></div>
+  </div>
+
+  <!-- 대기 -->
+  <div class="view center" id="vIdle">
+    <div class="big">슥</div>
+    <div class="h" id="idleHead">다음 이야기를 보내주세요</div>
+    <div class="s" id="idleSub">폰으로 아래 주소에 접속해<br>한 문장을 보내면 장면이 만들어집니다</div>
+    <div class="url" id="idleUrl">/write</div>
+    <div class="posters" id="posters"></div>
+  </div>
+
+  <!-- 생성 -->
+  <div class="view center" id="vGen">
+    <div class="h">장면을 만드는 중</div>
+    <div class="s">보내주신 문장이 영상이 되고 있습니다</div>
+    <div class="gens" id="genList"></div>
+  </div>
+
+  <!-- 투표 -->
+  <div class="view" id="vVote">
+    <h1>어느 장면으로 이어갈까요</h1>
+    <div class="grid" id="voteGrid"></div>
+  </div>
+</section>
+
+<aside id="list">
+  <div class="lh"><span class="t">지금까지의 장면</span><span class="c" id="cnt"></span></div>
+  <div id="scenes"></div>
+</aside>
+
+<footer id="foot">
+  <div><b id="total">0</b>번째 장면까지 이어졌습니다</div>
+  <div class="sp2" id="spend"></div>
+</footer>
+
+<script>
+/* ════════════════════════════════════════════
+   상영 화면 — 라운드 대응
+
+   idle/collect → 재생 루프 (또는 안내)
+   generate     → 후보별 생성 진행
+   vote         → 후보 나란히 + 실시간 득표      ← 부스의 하이라이트
+   reveal       → 당선작
+
+   씬 1·2 는 아직 스켈레톤. story.json 에 image/video 가 채워지면
+   자동으로 실제 콘텐츠로 바뀐다.
+   ════════════════════════════════════════════ */
+
+const POLL = 900;
+const $ = s => document.querySelector(s);
+const esc = s => String(s).replace(/[&<>"']/g,
+  c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+
+let story = null;
+let playIdx = 0, playUntil = 0;   // 재생 루프 커서
+let lastPhase = null;
+
+function view(id){
+  ['vPlay','vIdle','vGen','vVote'].forEach(v =>
+    $('#'+v).classList.toggle('on', v === id));
+}
+
+/* 고정 씬 + canon 을 하나의 번호 체계로 */
+function allScenes(st){
+  const sc = (story?.scenarios || []).find(x => x.id === st.scenarioId);
+  const fixed = ((sc?.scenes) || []).map(s => ({
+    key:'f'+s.n, n:s.n, fixed:true, skeleton:!!s.skeleton,
+    label:s.label, caption:s.caption, image:s.image, video:s.video,
+    hold:(s.holdSeconds||5)*1000,
+  }));
+  return fixed.concat((st.canon || []).map(c => ({
+    key:'c'+c.n, n:c.n, fixed:false, skeleton:!c.video && !c.still,
+    label: c.contested ? `관람객 · ${c.votes}표` : '관람객',
+    caption:c.text, image:c.still, video:c.video, hold:6000,
+  })));
+}
+
+/* ── 재생 루프 ── */
+let frontLayer = 'A';   // 지금 보이고 있는 레이어
+
+function playScene(s){
+  const im = $('#playImg'), sk = $('#skel');
+  $('#capText').textContent = s.caption || '';
+
+  if(s.video){
+    // 뒤 레이어에 다음 영상을 올려 첫 프레임까지 준비한 뒤 교차한다.
+    // 준비 전에 바꾸면 검은 화면이 한 번 스치므로 반드시 기다린다.
+    const next = frontLayer === 'A' ? $('#playB') : $('#playA');
+    const cur  = frontLayer === 'A' ? $('#playA') : $('#playB');
+    im.style.display = 'none'; sk.style.display = 'none';
+
+    const swap = () => {
+      next.classList.add('on');
+      cur.classList.remove('on');
+      frontLayer = frontLayer === 'A' ? 'B' : 'A';
+      next.play().catch(()=>{});
+      // 교차가 끝난 뒤 정리 — 재생 중인 걸 즉시 멈추면 페이드 도중 끊긴다
+      setTimeout(() => { try { cur.pause(); } catch(e){} }, 500);
+    };
+
+    next.src = s.video;
+    next.load();
+    let done = false;
+    const go = () => { if(!done){ done = true; swap(); } };
+    next.addEventListener('loadeddata', go, {once:true});
+    setTimeout(go, 1500);            // 로딩이 늦어도 화면은 넘어간다
+  } else if(s.image){
+    $('#playA').classList.remove('on'); $('#playB').classList.remove('on');
+    sk.style.display = 'none';
+    im.src = s.image; im.style.display = 'block';
+  } else {
+    $('#playA').classList.remove('on'); $('#playB').classList.remove('on');
+    im.style.display = 'none';
+    $('#skelLabel').textContent = `씬 ${s.n} · ${s.label}`;
+    sk.style.display = 'flex';
+  }
+  playUntil = performance.now() + s.hold;
+}
+
+function renderList(scenes, key){
+  $('#scenes').innerHTML = scenes.map(s => `
+    <div class="sc ${s.key===key?'playing':''}">
+      <div class="th ${s.skeleton?'sk':''}">
+        ${s.video ? `<video src="${s.video}" muted playsinline preload="metadata"></video>`
+          : s.image ? `<img src="${s.image}">`
+          : '스켈레톤'}
+        <div class="n ${s.fixed?'fx':''}">씬 ${s.n}</div>
+      </div>
+      <div class="bd">
+        <div class="cp">${esc(s.caption||'')}</div>
+        <div class="mt">${s.fixed?'사전 제작 · ':''}${esc(s.label)}</div>
+      </div>
+    </div>`).join('');
+  const a = $('#scenes').querySelector('.playing');
+  if(a) a.scrollIntoView({block:'nearest'});
+  $('#cnt').textContent = scenes.length + '개';
+  $('#total').textContent = scenes.filter(s => !s.skeleton).length;
+}
+
+function renderGen(st){
+  $('#genList').innerHTML = st.candidates.map(c => `
+    <div class="gen">
+      ${c.status==='ready' ? '<div class="ok"></div>' : '<div class="sp"></div>'}
+      <div class="t">${esc(c.text)}</div>
+      <div class="p">${esc(c.progress||'')}</div>
+    </div>`).join('');
+}
+
+function renderVote(st){
+  const max = Math.max(1, ...st.candidates.map(c => c.votes));
+  const total = Math.max(1, st.totalVotes);
+  $('#voteGrid').style.gridTemplateColumns = `repeat(${st.candidates.length},1fr)`;
+  $('#voteGrid').innerHTML = st.candidates.map(c => `
+    <div class="vc ${c.votes===max && c.votes>0 ? 'lead':''}">
+      <div class="m">
+        ${c.video ? `<video src="${c.video}" muted playsinline loop autoplay></video>`
+          : c.still ? `<img src="${c.still}">`
+          : '<div class="ph">생성 실패</div>'}
+      </div>
+      <div class="b">
+        <div class="tx">${esc(c.text)}</div>
+        <div class="bar"><i style="width:${(c.votes/total*100).toFixed(0)}%"></i></div>
+        <div class="nv"><span>득표</span><b>${c.votes}</b></div>
+      </div>
+    </div>`).join('');
+}
+
+/* ── 메인 루프 ── */
+async function tick(){
+  try{
+    if(!story) story = await fetch('/api/story').then(r=>r.json());
+    const st = await fetch('/api/round').then(r=>r.json());
+
+    // 이야기가 정해지기 전 — 큰 화면에도 선택지를 띄운다
+    if(!st.scenarioId){
+      view('vIdle');
+      $('#idleHead').textContent = story.invite || '이야기를 골라주세요';
+      $('#idleSub').innerHTML = '폰으로 아래 주소에 접속해<br>이야기를 하나 골라주세요';
+      $('#idleUrl').textContent = location.origin + '/write';
+      if(!$('#posters').dataset.on){
+        $('#posters').dataset.on = '1';
+        $('#posters').innerHTML = (story.scenarios||[]).map(sc =>
+          `<div class="p"><img src="${sc.poster}"><div class="t">${esc(sc.title)}</div></div>`).join('');
+      }
+      $('#phaseText').innerHTML = '이야기 고르는 중';
+      renderList([], null);
+      setTimeout(tick, POLL);
+      return;
+    }
+    $('#posters').dataset.on = '';
+
+    const scenes = allScenes(st);
+
+    const label = {idle:'대기', collect:'접수', generate:'생성',
+                   vote:'투표', reveal:'발표'}[st.phase] || st.phase;
+    const clock = (st.remaining === null || st.phase === 'generate') ? '' : st.remaining + 's';
+    $('#phaseText').innerHTML =
+      `${st.round}R · ${label} <b>${clock}</b>` +
+      (st.phase === 'collect' ? ` · ${st.poolCount}명` : '');
+
+    if(st.phase === 'generate'){
+      view('vGen'); renderGen(st); renderList(scenes, null);
+    } else if(st.phase === 'vote'){
+      view('vVote'); renderVote(st); renderList(scenes, null);
+    } else if(st.phase === 'reveal'){
+      const w = st.candidates.find(c => c.id === st.winner);
+      view('vPlay');
+      if(lastPhase !== 'reveal' && w){
+        playScene({n:'', label:'', caption:w.text, image:w.still, video:w.video, hold:6000});
+      }
+      renderList(scenes, 'c' + (scenes.length ? scenes[scenes.length-1].n : ''));
+    } else {
+      // idle / collect — 이야기 루프
+      const playable = scenes;
+      if(!playable.length){ view('vIdle'); }
+      else {
+        view('vPlay');
+        if(performance.now() > playUntil){
+          playIdx = (playIdx + 1) % playable.length;
+          playScene(playable[playIdx]);
+        }
+        renderList(scenes, playable[playIdx]?.key);
+      }
+    }
+
+    $('#idleUrl').textContent = location.origin + '/write';
+    $('#spend').textContent = st.live
+      ? `LIVE · 생성 ${st.generated}건 · 약 $${st.spentUsd}`
+      : `드라이런 · 생성 ${st.generated}건`;
+    lastPhase = st.phase;
+  }catch(e){ /* 서버가 잠깐 죽어도 화면은 유지 */ }
+  setTimeout(tick, POLL);
+}
+tick();
+</script>
+</body>
+</html>

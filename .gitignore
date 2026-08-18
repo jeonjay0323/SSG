@@ -1,0 +1,11 @@
+# 런타임 산출물
+canon.json
+canon.tmp
+/clips/
+*.mp4
+__pycache__/
+*.pyc
+.DS_Store
+
+# 파생 프레임 (실행 중 /tmp 에 생성)
+scenes/chain/
