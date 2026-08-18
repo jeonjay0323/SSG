@@ -9,3 +9,12 @@ __pycache__/
 
 # 파생 프레임 (실행 중 /tmp 에 생성)
 scenes/chain/
+
+# 로컬 전용 작업 폴더 (저장소에 올리지 않음)
+03_FeatureSpec/
+04_진행상황/
+07_Studio/
+08_Trailer/
+09_Actors/
+10_Brand/
+성적산출_근거자료.md
