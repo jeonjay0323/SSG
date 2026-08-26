@@ -174,7 +174,7 @@ IDENTITY_LOCK = (
 )
 
 
-def build_prompt(motion_key, extra=None, beat=None, has_refs=False):
+def build_prompt(motion_key, extra=None, beat=None, has_refs=False, world=None):
     """beat = 관람객이 쓴 문장. 주어지면 프롬프트 맨 앞에 최우선 지시로 놓는다.
 
     뒤에 붙이면 카메라 지시와 정체성 고정에 묻혀 무시된다 —
@@ -191,7 +191,7 @@ def build_prompt(motion_key, extra=None, beat=None, has_refs=False):
         )
     parts.append(MOTION_PRESETS[motion_key])
     if beat:
-        parts.append(DIRECTOR)
+        parts.append((world or {}).get("director") or DIRECTOR)
     parts.append(CHARACTER_LOCK if beat else IDENTITY_LOCK)
     if has_refs:
         parts.append(ASSET_NOTE)
@@ -219,8 +219,8 @@ def gcloud_project():
 
 
 def generate_clip(img_path, tier="lite", seconds=8, motion="slow_push",
-                  extra=None, beat=None, refs=None, aspect="16:9", resolution="720p",
-                  audio=False, gcs=None, out_stem=None, on_progress=None):
+                  extra=None, beat=None, refs=None, world=None, aspect="16:9",
+                  resolution="720p", audio=False, gcs=None, out_stem=None, on_progress=None):
     """씬 이미지 → 영상 클립 1편. 성공 시 (출력경로, 메타dict) 반환.
 
     server.py 등 다른 프로세스에서 재사용하기 위해 CLI와 분리했다.
@@ -255,7 +255,7 @@ def generate_clip(img_path, tier="lite", seconds=8, motion="slow_push",
             reason = "시작 프레임과 병용 불가 — 체이닝 우선"
         say(f"레퍼런스 미사용: {reason}")
         refs = []
-    prompt = build_prompt(motion, extra, beat, has_refs=bool(refs))
+    prompt = build_prompt(motion, extra, beat, has_refs=bool(refs), world=world)
     CLIPS_DIR.mkdir(parents=True, exist_ok=True)
 
     cfg_kwargs = dict(
@@ -265,7 +265,7 @@ def generate_clip(img_path, tier="lite", seconds=8, motion="slow_push",
         resolution=resolution,
         person_generation="allow_adult",
         generate_audio=audio,
-        negative_prompt=NEGATIVE,
+        negative_prompt=(world or {}).get("negative") or NEGATIVE,
     )
     if gcs:
         cfg_kwargs["output_gcs_uri"] = gcs

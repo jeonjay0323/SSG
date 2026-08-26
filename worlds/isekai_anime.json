@@ -1,0 +1,57 @@
+{
+  "id": "isekai_anime",
+  "label": "이세계 용사 · 애니메이션",
+  "toneRef": "〈전생했더니 슬라임이었던 건에 대하여〉",
+  "medium": "anime",
+  "refsDir": "scenes/worlds/isekai_anime/refs",
+
+  "character": "A young woman in her early twenties, drawn as a Japanese TV anime heroine. Softly rounded face, small pointed chin, medium-sized almond eyes with clean dark irises — expressive but NOT oversized. Straight nose, small mouth. Long ash-brown hair tied back, a few loose strands at the temples. Calm, level-headed expression; she reads as capable rather than cute.",
+
+  "wardrobe": "A traveller's outfit: a deep green hooded cloak over a light linen tunic, a fitted leather chestpiece, brown leather gloves and boots, a plain longsword at her hip. Worn and practical, not ornate — the gear of someone who has been walking for days.",
+
+  "grade": "Bright, clean anime colour: soft saturated greens and warm daylight, gentle gradients in the sky, airy atmosphere. Flat cel shading with two-tone shadows and crisp shadow edges. Light haze and god-rays in the distance. No photographic depth of field, no film grain, no realistic skin texture.",
+
+  "director": "DIRECTION — this is a frame from a Japanese TV anime series in the style of 'That Time I Got Reincarnated as a Slime'. Hand-drawn cel animation look: clean confident linework, flat two-tone cel shading, digitally painted backgrounds with more detail than the characters. NOT photorealistic, NOT 3D CGI, NOT a live-action still.\n\nTHE FOURTH WALL IS NEVER BROKEN:\nShe does not know she is being watched. She never looks into the lens, never poses. Her eyes are always on something inside the world of the scene.\n\nCOMPOSITION:\nAnime staging — let the painted background carry the shot. She may be small against a wide landscape, framed by foliage or architecture, or held in a clean close-up with a simple blurred backdrop. Strong horizon lines and clear silhouettes. Keep the figure readable at a glance.\n\nDRAWING:\nCharacter art stays on-model: consistent line weight, flat colour fills, two-tone shadow. Backgrounds are painted with more texture and atmosphere than the characters — the classic anime contrast between painted BG and cel figure. Speed lines, bloom and lens flare are allowed sparingly for fantasy light.\n\nLIGHT AND COLOUR:\nBright and open. Warm daylight with soft rim light, cool shadows. Magic light may glow with a soft bloom. Never muddy, never desaturated, never a live-action colour grade.\n\nPERFORMANCE:\nAnime acting — clear readable emotion held in a single pose: a steady gaze, a hand tightening on a sword grip, hair and cloak moving in the wind. No exaggerated comedy faces, no chibi deformation.\n\nFORBIDDEN: photorealism, real human skin texture, live-action photography, 3D CGI render, eye contact with camera, oversized moe eyes, chibi proportions, text, subtitles, captions, watermarks, logos, UI overlays.",
+
+  "negative": "photorealistic, photograph, live action, real human skin, 3D CGI render, unreal engine, looking at the camera, direct eye contact with the lens, posing for the camera, oversized moe eyes, chibi, super deformed, text, subtitles, captions, watermark, logo, UI overlay, film grain, muddy desaturated colours, deformed hands, extra limbs, warping, morphing",
+
+  "shots": [
+    {
+      "key": "landscape_wide",
+      "label": "풍경 와이드",
+      "desc": "A wide establishing shot with a painted fantasy landscape filling most of the frame. She stands small and off-centre, seen from behind or in three-quarter rear, cloak moving in the wind. The background carries the shot."
+    },
+    {
+      "key": "framed_by_nature",
+      "label": "자연 프레임",
+      "desc": "A medium shot framed through foliage, a stone arch or hanging branches in the near foreground. She is pushed to one side of frame, looking off into the distance. Painted background with soft depth."
+    },
+    {
+      "key": "over_shoulder",
+      "label": "오버숄더",
+      "desc": "An over-the-shoulder shot from behind her: her shoulder and the back of her head fill one side of frame, while what she is looking at sits clearly in the centre distance. Her face is not visible."
+    },
+    {
+      "key": "face_closeup",
+      "label": "얼굴 클로즈업",
+      "desc": "A clean anime close-up of her face at a three-quarter angle, eyes fixed on something off-frame. Simple blurred or gradient background so the character art reads clearly. Restrained expression."
+    },
+    {
+      "key": "low_hero",
+      "label": "로우앵글",
+      "desc": "A low-angle shot looking up at her against open sky, cloak and hair caught by the wind, sword visible at her hip. She looks ahead into the distance, never at the camera."
+    },
+    {
+      "key": "silhouette",
+      "label": "실루엣 역광",
+      "desc": "A backlit shot where she reads mainly as a clean silhouette against bright sky or magical light, with rim light along her outline. The environment glows behind her."
+    }
+  ],
+
+  "hold": {
+    "key": "hold",
+    "label": "연속 · 동일 구도",
+    "hold": true,
+    "desc": "Keep the EXACT same camera setup as the previous frame — same angle, distance, framing and composition, the character at the same position and scale. This is the same shot continuing, not a new one. Do not re-frame, do not move the camera."
+  }
+}

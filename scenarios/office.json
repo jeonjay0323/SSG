@@ -1,0 +1,24 @@
+{
+  "id": "office",
+  "title": "야근",
+  "logline": "새벽 세 시, 아무도 없는 사무실. 복사기가 혼자 돌아가기 시작했다.",
+  "world": "office_horror",
+  "poster": "/scenes/worlds/office_horror/intro.png",
+  "lead": "복사기에서 나온 종이에는,",
+  "scenes": [
+    {
+      "n": 1,
+      "label": "복사기",
+      "caption": "새벽 세 시. 아무도 누르지 않은 복사기가 돌아가고 있었다.",
+      "image": "/scenes/worlds/office_horror/intro.png",
+      "video": "/clips/office_intro.mp4",
+      "holdSeconds": 9
+    }
+  ],
+  "generation": {
+    "startFrame": "/scenes/worlds/office_horror/seed.png",
+    "tier": "lite",
+    "seconds": 4,
+    "restageEvery": 2
+  }
+}

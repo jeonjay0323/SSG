@@ -1,0 +1,24 @@
+{
+  "id": "isekai",
+  "title": "이세계 용사",
+  "logline": "눈을 뜨니 낯선 숲이었다. 발밑에 빛나는 소환진, 그리고 무언가가 다가오고 있었다.",
+  "world": "isekai_anime",
+  "poster": "/scenes/worlds/isekai_anime/intro.png",
+  "lead": "숲에서 걸어 나온 것은,",
+  "scenes": [
+    {
+      "n": 1,
+      "label": "소환진",
+      "caption": "눈을 뜨니 낯선 숲이었다. 발밑에서 소환진이 꺼져가고 있었다.",
+      "image": "/scenes/worlds/isekai_anime/intro.png",
+      "video": "/clips/isekai_intro.mp4",
+      "holdSeconds": 9
+    }
+  ],
+  "generation": {
+    "startFrame": "/scenes/worlds/isekai_anime/seed.png",
+    "tier": "lite",
+    "seconds": 4,
+    "restageEvery": 2
+  }
+}

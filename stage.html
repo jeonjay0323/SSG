@@ -70,6 +70,25 @@
   #capText{font-family:var(--brand);font-weight:700;font-size:30px;color:#fff;
            line-height:1.45;text-shadow:0 2px 24px rgba(0,0,0,.9);min-height:44px}
 
+  /* 접수 중 들어온 문장 — 보낸 사람이 큰 화면에서 확인할 수 있게 */
+  #inbox{
+    position:absolute;left:0;right:0;bottom:0;padding:26px 40px 22px;
+    background:linear-gradient(to top,rgba(10,10,12,.92) 55%,transparent);
+    opacity:0;transition:opacity .35s;pointer-events:none;
+  }
+  #inbox.on{opacity:1}
+  #inbox .ttl{font-family:var(--brand);font-size:13px;color:var(--violet-text);
+              margin-bottom:10px}
+  #inboxList{display:flex;flex-direction:column;gap:7px}
+  #inboxList .m{
+    align-self:flex-start;max-width:78%;padding:9px 14px;border-radius:4px;
+    background:rgba(26,26,28,.94);border:1px solid var(--outline-light);
+    color:var(--chacole);font-size:17px;line-height:1.5;
+    animation:slideIn .4s ease both;
+  }
+  #inboxList .m.fresh{border-color:var(--violet);color:#fff}
+  @keyframes slideIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
+
   /* ── 투표 뷰 ── */
   #vote{display:flex;flex-direction:column;padding:78px 40px 34px;gap:20px;background:var(--surface)}
   #vote h1{font-family:var(--brand);font-weight:700;font-size:28px;
@@ -119,7 +138,26 @@
   .posters .p .t{padding:10px 12px;font-family:var(--brand);font-weight:700;
                  font-size:14px;color:var(--on-surface)}
 
-  .gens{display:flex;flex-direction:column;gap:10px;margin-top:8px;width:min(620px,72%)}
+  /* 생성 중 — 리스테이징된 첫 프레임을 크게 보여준다 */
+  #vGen{display:flex;flex-direction:column;background:var(--black)}
+  #genStage{flex:1;min-height:0;display:flex;gap:10px;padding:26px 26px 0;
+            align-items:center;justify-content:center}
+  #genStage .f{flex:1 1 0;min-width:0;height:100%;position:relative;
+               border-radius:4px;overflow:hidden;background:#0c0c0e}
+  #genStage .f img{width:100%;height:100%;object-fit:contain;
+                   animation:kenburns 12s ease-out both}
+  #genStage .f .cap{position:absolute;left:0;right:0;bottom:0;padding:34px 14px 12px;
+                    background:linear-gradient(to top,rgba(0,0,0,.9),transparent);
+                    font-size:15px;line-height:1.5;color:#fff}
+  #genStage .f .wait{position:absolute;inset:0;display:flex;align-items:center;
+                     justify-content:center;color:var(--dust);font-family:var(--brand);
+                     font-size:13px}
+  @keyframes kenburns{from{transform:scale(1)}to{transform:scale(1.06)}}
+  .genfoot{padding:18px 26px 22px;background:var(--surface);display:flex;
+           flex-direction:column;align-items:center;gap:12px}
+  .genfoot .h{font-family:var(--brand);font-weight:700;font-size:20px;color:var(--on-surface)}
+
+  .gens{display:flex;flex-direction:column;gap:10px;margin-top:0;width:min(620px,72%)}
   .gen{
     display:flex;align-items:center;gap:12px;padding:12px 15px;
     border:1px solid var(--outline-light);border-radius:4px;background:var(--surface-container);font-size:14px;
@@ -161,6 +199,15 @@
         padding:0 24px;font-family:var(--brand);font-size:13px;color:var(--dust)}
   #foot b{color:var(--violet-text);font-size:18px;font-weight:700;margin-right:4px}
   .sp2{font-family:ui-monospace,monospace;font-size:11px;color:var(--dust)}
+  .frow{display:flex;align-items:center;gap:12px}
+  .btn-ghost{
+    padding:4px 10px;border-radius:4px;border:1px solid var(--outline-light);
+    background:none;color:var(--dust);font-family:var(--brand);font-size:12px;
+    cursor:pointer;transition:opacity .15s;
+  }
+  .btn-ghost:hover{opacity:.7}
+  .btn-ghost.arm{border-color:var(--violet);color:var(--violet-text)}
+  .hide{display:none !important}
 </style>
 </head>
 <body>
@@ -178,6 +225,7 @@
       <div class="box">아직 만들어지지 않은 장면</div>
     </div>
     <div id="cap"><div id="capText"></div></div>
+  <div id="inbox"><div class="ttl" id="inboxTtl"></div><div id="inboxList"></div></div>
   </div>
 
   <!-- 대기 -->
@@ -190,10 +238,12 @@
   </div>
 
   <!-- 생성 -->
-  <div class="view center" id="vGen">
-    <div class="h">장면을 만드는 중</div>
-    <div class="s">보내주신 문장이 영상이 되고 있습니다</div>
-    <div class="gens" id="genList"></div>
+  <div class="view" id="vGen">
+    <div id="genStage"></div>
+    <div class="genfoot">
+      <div class="h">첫 프레임이 나왔습니다 — 움직이기 시작합니다</div>
+      <div class="gens" id="genList"></div>
+    </div>
   </div>
 
   <!-- 투표 -->
@@ -210,7 +260,10 @@
 
 <footer id="foot">
   <div><b id="total">0</b>번째 장면까지 이어졌습니다</div>
-  <div class="sp2" id="spend"></div>
+  <div class="frow">
+    <button class="btn-ghost hide" id="backBtn">처음으로</button>
+    <div class="sp2" id="spend"></div>
+  </div>
 </footer>
 
 <script>
@@ -231,7 +284,7 @@ const $ = s => document.querySelector(s);
 const esc = s => String(s).replace(/[&<>"']/g,
   c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 
-let story = null;
+let story = null, storyAt = 0;
 let playIdx = 0, playUntil = 0;   // 재생 루프 커서
 let lastPhase = null;
 
@@ -317,6 +370,19 @@ function renderList(scenes, key){
   $('#total').textContent = scenes.filter(s => !s.skeleton).length;
 }
 
+function renderGenStage(st){
+  const box = $('#genStage');
+  const sig = st.candidates.map(c => c.still || '').join('|');
+  if(box.dataset.sig === sig) return;      // 같은 프레임이면 다시 그리지 않는다
+  box.dataset.sig = sig;
+  box.innerHTML = st.candidates.map(c => `
+    <div class="f">
+      ${c.still ? `<img src="${c.still}">`
+                : '<div class="wait">첫 프레임을 세우는 중</div>'}
+      <div class="cap">${esc(c.text)}</div>
+    </div>`).join('');
+}
+
 function renderGen(st){
   $('#genList').innerHTML = st.candidates.map(c => `
     <div class="gen">
@@ -345,10 +411,43 @@ function renderVote(st){
     </div>`).join('');
 }
 
+/* ── 처음으로 (운영자용) ──
+   두 번 눌러야 실행된다. 관람객이 지나가다 누르는 사고를 막는다. */
+let backArmed = false, backTimer = null;
+$('#backBtn').addEventListener('click', async () => {
+  if(!backArmed){
+    backArmed = true;
+    $('#backBtn').textContent = '정말 처음으로?';
+    $('#backBtn').classList.add('arm');
+    clearTimeout(backTimer);
+    backTimer = setTimeout(disarmBack, 4000);
+    return;
+  }
+  disarmBack();
+  await fetch('/api/reset', {method:'POST',
+    headers:{'Content-Type':'application/json'}, body:'{"voter":"stage"}'});
+  played.clear(); playIdx = 0; playUntil = 0;
+});
+function disarmBack(){
+  backArmed = false;
+  $('#backBtn').textContent = '처음으로';
+  $('#backBtn').classList.remove('arm');
+  clearTimeout(backTimer);
+}
+
 /* ── 메인 루프 ── */
 async function tick(){
   try{
-    if(!story) story = await fetch('/api/story').then(r=>r.json());
+    // story 를 한 번만 읽으면, 배포 후에도 열려 있던 화면이 옛 시나리오를 계속 보여준다.
+    if(!story || performance.now() - storyAt > 15000){
+      const fresh = await fetch('/api/story').then(r=>r.json()).catch(()=>null);
+      if(fresh){
+        const changed = JSON.stringify((fresh.scenarios||[]).map(x=>x.id))
+                     !== JSON.stringify((story?.scenarios||[]).map(x=>x.id));
+        story = fresh; storyAt = performance.now();
+        if(changed) $('#posters').dataset.on = '';   // 포스터 다시 그리기
+      }
+    }
     const st = await fetch('/api/round').then(r=>r.json());
 
     // 이야기가 정해지기 전 — 큰 화면에도 선택지를 띄운다
@@ -363,11 +462,13 @@ async function tick(){
           `<div class="p"><img src="${sc.poster}"><div class="t">${esc(sc.title)}</div></div>`).join('');
       }
       $('#phaseText').innerHTML = '이야기 고르는 중';
+      $('#backBtn').classList.add('hide'); disarmBack();
       renderList([], null);
       setTimeout(tick, POLL);
       return;
     }
     $('#posters').dataset.on = '';
+    $('#backBtn').classList.remove('hide');
 
     const scenes = allScenes(st);
 
@@ -379,7 +480,8 @@ async function tick(){
       (st.phase === 'collect' ? ` · ${st.poolCount}명` : '');
 
     if(st.phase === 'generate'){
-      view('vGen'); renderGen(st); renderList(scenes, null);
+      view('vGen'); renderGenStage(st); renderGen(st); renderList(scenes, null);
+      $('#inbox').classList.remove('on');
     } else if(st.phase === 'vote'){
       view('vVote'); renderVote(st); renderList(scenes, null);
     } else if(st.phase === 'reveal'){
@@ -391,6 +493,22 @@ async function tick(){
       renderList(scenes, 'c' + (scenes.length ? scenes[scenes.length-1].n : ''));
     } else {
       // idle / collect — 이야기 루프
+      const pool = st.pool || [];
+      if(st.phase === 'collect' && pool.length){
+        $('#inbox').classList.add('on');
+        $('#inboxTtl').textContent =
+          `${st.poolCount}명이 쓰는 중 · ${st.remaining}초 남음`;
+        const sig = pool.join('|');
+        if($('#inboxList').dataset.sig !== sig){
+          const prev = ($('#inboxList').dataset.sig || '').split('|');
+          $('#inboxList').dataset.sig = sig;
+          $('#inboxList').innerHTML = pool.map(t =>
+            `<div class="m ${prev.includes(t) ? '' : 'fresh'}">${esc(t)}</div>`).join('');
+        }
+      } else {
+        $('#inbox').classList.remove('on');
+        $('#inboxList').dataset.sig = '';
+      }
       const playable = scenes;
       if(!playable.length){ view('vIdle'); }
       else {

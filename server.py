@@ -53,8 +53,25 @@ CHAIN_DIR = Path(os.environ.get("SSG_TMP", "/tmp/ssg")) / "chain"
 STORY_PATH = ROOT / "story.json"
 
 
+SCENARIOS_DIR = ROOT / "scenarios"
+
+
 def load_story():
-    return json.loads(STORY_PATH.read_text(encoding="utf-8"))
+    """story.json(공통) + scenarios/<id>.json(각 이야기)를 합쳐 돌려준다.
+
+    이야기와 연출 프롬프트를 코드 밖에서 관리하려고 파일을 나눴다.
+    프롬프트는 worlds/<id>.json 에 있고 restage/generate_clip 이 읽는다.
+    """
+    story = json.loads(STORY_PATH.read_text(encoding="utf-8"))
+    out = []
+    for sid in story.get("scenarios", []):
+        f = SCENARIOS_DIR / f"{sid}.json"
+        if not f.exists():
+            print(f"  ! 시나리오 파일 없음: {f.name}", flush=True)
+            continue
+        out.append(json.loads(f.read_text(encoding="utf-8")))
+    story["scenarios"] = out
+    return story
 
 
 # ─────────────────────────────────────────────────────────────
@@ -84,6 +101,20 @@ class Engine:
         self.spent_usd = 0.0
         self.generated = 0
         self.start_round()
+
+    def reset_story(self):
+        """진행 중인 이야기를 접고 시나리오 선택으로 되돌린다."""
+        with self.lock:
+            title = self.scenario_id
+            self.scenario_id = None
+            self.canon = []
+            self.candidates = []
+            self.votes = {}
+            self.winner = None
+            self.contested = False
+            self.pool = []
+        print(f"\n↺ 이야기 초기화 (이전: {title})", flush=True)
+        return True, "처음으로 돌아갑니다"
 
     def pick_scenario(self, sid, story):
         """시나리오 선택. 먼저 고른 사람이 정한다."""
@@ -198,6 +229,8 @@ class Engine:
                 "phase": self.phase,
                 "remaining": self.remaining(),
                 "poolCount": len(self.pool),
+                # 큰 화면에 "방금 들어온 문장"을 띄우기 위해 최근 것부터 몇 개만
+                "pool": [p["text"] for p in self.pool][-6:],
                 "candidates": [
                     {k: c[k] for k in ("id", "text", "video", "still", "status", "progress", "votes")}
                     for c in self.candidates
@@ -287,14 +320,12 @@ def prestage(eng, sub_id, text, story):
     """
     with eng.lock:
         idx = len(eng.canon)
-    if not wants_restage(story, idx):
-        return
     def work():
         from restage import restage, shot_for
         shot = shot_for(idx)
         base = chain_start_frame(eng, story)
         out = CHAIN_DIR / f"staged_{sub_id}.png"
-        restage(base, out, shot, beat=text)
+        restage(base, out, shot, beat=text, world=w)
         return out, shot
     PRESTAGE[sub_id] = PRESTAGE_POOL.submit(work)
 
@@ -320,12 +351,14 @@ def staged_start_frame(eng, cand, story, prog):
     with eng.lock:
         idx = len(eng.canon)
     try:
-        from restage import restage, shot_for, SHOT_HOLD
-        gen = active(eng, story)["generation"]
-        shot = shot_for(idx) if wants_new_angle(gen, idx) else SHOT_HOLD
+        from restage import restage, shot_for, hold_shot, load_world
+        sc = active(eng, story)
+        gen = sc["generation"]
+        w = load_world(sc["world"]) if sc.get("world") else None
+        shot = shot_for(idx, w) if wants_new_angle(gen, idx) else hold_shot(w)
         out = CHAIN_DIR / f"staged_{cand['id']}.png"
         prog(f"컷 세우는 중 · {shot['label']}")
-        restage(base, out, shot, beat=cand["text"])
+        restage(base, out, shot, beat=cand["text"], world=w)
         return out, shot
     except Exception as e:
         print(f"  ! 리스테이징 실패 ({type(e).__name__}) — 원본 프레임 사용", flush=True)
@@ -352,6 +385,15 @@ def make_candidate_video(eng, cand, story):
             cand["progress"] = "드라이런"
         return
 
+    # 리스테이징된 첫 프레임을 즉시 화면에 내보낸다. 생성이 끝날 때까지의
+    # 빈 시간이 "내 문장의 첫 프레임을 보는 시간"이 된다.
+    try:
+        if start and Path(start).parent == CHAIN_DIR:
+            with eng.lock:
+                cand["still"] = "/staged/" + Path(start).name
+    except Exception:
+        pass
+
     try:
         from generate_clip import generate_clip
         prog("생성 중")
@@ -366,7 +408,8 @@ def make_candidate_video(eng, cand, story):
             # 관람객 문장은 최우선 지시(beat)로 프롬프트 맨 앞에 놓인다.
             # extra 로 뒤에 붙이면 카메라·정체성 지시에 묻혀 무시된다.
             beat=cand["text"],
-            refs=asset_refs(),
+            world=(__import__("restage").load_world(active(eng, story)["world"])
+                   if active(eng, story).get("world") else None),
             out_stem=f"r{eng.round_n}_{cand['id']}",
             on_progress=prog,
         )
@@ -739,6 +782,9 @@ class Handler(BaseHTTPRequestHandler):
             return self._send(200, ENGINE.snapshot())
         if p == "/api/story":
             return self._send(200, load_story())
+        if p.startswith("/staged/"):
+            # 리스테이징 결과 — 생성이 끝나기 전에 '첫 프레임'을 먼저 보여준다
+            return self._media(CHAIN_DIR / Path(p).name, "image/png")
         if p.startswith("/clips/"):
             return self._clip(Path(p).name)
         if p.startswith("/scenes/"):
@@ -779,7 +825,14 @@ class Handler(BaseHTTPRequestHandler):
                 prestage(ENGINE, sub["id"], sub["text"], load_story())
             return self._send(200, {"ok": ok,
                                     "message": res if not ok else "접수됐습니다",
-                                    "count": res if ok else None})
+                                    "count": res if ok else None,
+                                    "round": ENGINE.round_n})
+        if self.path == "/api/reset":
+            ok, msg = ENGINE.reset_story()
+            PRESTAGE.clear()
+            save_snapshot(ENGINE)
+            ENGINE.start_round()
+            return self._send(200, {"ok": ok, "message": msg})
         if self.path == "/api/pick":
             ok, msg = ENGINE.pick_scenario(body.get("scenarioId"), load_story())
             return self._send(200, {"ok": ok, "message": msg})
@@ -825,6 +878,9 @@ def main():
         load_snapshot(ENGINE)
     threading.Thread(target=driver, args=(ENGINE,), daemon=True).start()
 
+    if not story.get("scenarios"):
+        print("[Error] 시나리오가 하나도 없습니다 — scenarios/*.json 을 확인하세요")
+        sys.exit(1)
     per = 0.05 * story["scenarios"][0]["generation"].get("seconds", 4)
     cap = f" · 예산 ${args.budget:.2f}" if args.budget else ""
     mode = (f"LIVE (최대 {args.max}건 · 건당 약 ${per:.2f}{cap})"

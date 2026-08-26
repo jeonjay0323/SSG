@@ -49,6 +49,15 @@
   @keyframes blink{0%,100%{opacity:1}50%{opacity:.25}}
   .phase b{color:var(--violet-text);font-variant-numeric:tabular-nums;font-weight:500}
 
+  .hrow{display:flex;align-items:center;gap:8px}
+  .btn-ghost{
+    padding:4px 10px;border-radius:4px;border:1px solid var(--outline-light);
+    background:none;color:var(--dust);font-family:var(--brand);font-size:12px;
+    transition:opacity .15s;
+  }
+  .btn-ghost:hover{opacity:.7}
+  .btn-ghost.arm{border-color:var(--violet);color:var(--violet-text)}
+
   /* ── 공통 ── */
   .card{background:var(--surface-container);border:1px solid var(--outline-light);border-radius:4px;padding:16px}
   h2{font-family:var(--brand);font-weight:700;font-size:24px;color:var(--on-surface);line-height:1.35}
@@ -141,7 +150,10 @@
 
 <header>
   <div class="logo">슥</div>
-  <div class="phase"><span class="dot"></span><span id="phaseText">연결 중</span></div>
+  <div class="hrow">
+    <button class="btn-ghost hide" id="backBtn">처음으로</button>
+    <div class="phase"><span class="dot"></span><span id="phaseText">연결 중</span></div>
+  </div>
 </header>
 
 <!-- 시나리오 선택 -->
@@ -169,7 +181,7 @@
 <section id="vWaiting" class="hide">
   <div class="note">
     <span class="em">보냈습니다</span>
-    다른 분들의 문장이 모이는 중입니다.<br>큰 화면을 봐주세요.
+    큰 화면 아래쪽에<br>방금 보낸 문장이 떠 있습니다.
     <div style="margin-top:18px;font-size:13px" id="waitCount"></div>
   </div>
 </section>
@@ -179,7 +191,8 @@
   <div class="note">
     <div class="spinner"></div>
     <span class="em">장면을 만드는 중</span>
-    잠시 후 투표가 열립니다.
+    큰 화면에 첫 프레임이 먼저 나옵니다.
+    <div style="margin-top:16px;font-size:13px" id="genLeft"></div>
   </div>
 </section>
 
@@ -221,9 +234,11 @@ const voter = (() => {
   return v;
 })();
 
-let story = null;
+let story = null, storyAt = 0;
 let maxChars = 40;
 let submittedRound = -1;   // 내가 문장을 낸 라운드
+let sending = false;       // 전송 중 — 폴링이 화면을 되돌리지 못하게
+let genStartedAt = 0;      // 생성 시작 시각 (남은 시간 추정용)
 let myVote = null;
 let lastPhase = null, lastRound = -1;
 
@@ -278,17 +293,53 @@ ta.addEventListener('input', () => {
 });
 
 $('#send').addEventListener('click', async () => {
+  if(sending) return;
+  sending = true;
   $('#send').disabled = true;
-  const res = await post('/api/submit', {text: ta.value.trim()});
-  if(res.ok){
-    submittedRound = lastRound;
-    ta.value = ''; $('#count').textContent = `0 / ${maxChars}`;
-    show('vWaiting');
-  } else {
-    toast(res.message || '보내지 못했습니다');
+  try{
+    const res = await post('/api/submit', {text: ta.value.trim()});
+    if(res.ok){
+      // 라운드 번호는 서버 응답에서 받는다.
+      // lastRound 를 쓰면 폴링이 아직 안 돈 시점에 -1 이 들어가 입력 화면으로 되돌아간다.
+      submittedRound = res.round ?? lastRound;
+      lastRound = submittedRound;
+      ta.value = ''; $('#count').textContent = `0 / ${maxChars}`;
+      show('vWaiting');
+    } else {
+      toast(res.message || '보내지 못했습니다');
+      $('#send').disabled = false;
+    }
+  } catch(e){
+    toast('보내지 못했습니다');
     $('#send').disabled = false;
+  } finally {
+    sending = false;
   }
 });
+
+/* ── 처음으로 ──
+   전시에서 실수로 이야기가 날아가면 곤란하므로 두 번 눌러야 실행된다. */
+let backArmed = false, backTimer = null;
+$('#backBtn').addEventListener('click', async () => {
+  if(!backArmed){
+    backArmed = true;
+    $('#backBtn').textContent = '정말 처음으로?';
+    $('#backBtn').classList.add('arm');
+    clearTimeout(backTimer);
+    backTimer = setTimeout(disarmBack, 4000);
+    return;
+  }
+  disarmBack();
+  const res = await post('/api/reset', {});
+  toast(res.message || '처음으로 돌아갑니다');
+  submittedRound = -1; myVote = null; scenariosDrawn = false;
+});
+function disarmBack(){
+  backArmed = false;
+  $('#backBtn').textContent = '처음으로';
+  $('#backBtn').classList.remove('arm');
+  clearTimeout(backTimer);
+}
 
 /* ── 투표 ── */
 function renderCands(st){
@@ -320,15 +371,26 @@ const esc = s => String(s).replace(/[&<>"']/g,
 /* ── 폴링 ── */
 async function tick(){
   try{
-    if(!story){
-      story = await fetch('/api/story').then(r=>r.json());
-      maxChars = story.handoff?.maxChars || 40;
-      $('#count').textContent = `0 / ${maxChars}`;
+    // story 를 한 번만 읽으면 배포 후에도 옛 시나리오가 계속 보인다
+    if(!story || performance.now() - storyAt > 15000){
+      const fresh = await fetch('/api/story').then(r=>r.json()).catch(()=>null);
+      if(fresh){
+        const changed = JSON.stringify((fresh.scenarios||[]).map(x=>x.id))
+                     !== JSON.stringify((story?.scenarios||[]).map(x=>x.id));
+        story = fresh; storyAt = performance.now();
+        maxChars = story.handoff?.maxChars || 40;
+        if(changed) scenariosDrawn = false;      // 카드 다시 그리기
+      }
     }
+    if(!story){ setTimeout(tick, POLL); return; }
     const st = await fetch('/api/round').then(r=>r.json());
+    if(sending){ setTimeout(tick, POLL); return; }   // 전송 중에는 화면을 건드리지 않는다
 
     // 아직 이야기가 정해지지 않았으면 선택 화면
     if(!st.scenarioId){
+      lastRound = st.round;      // 선택 화면에서도 라운드를 놓치지 않는다
+      submittedRound = -1;
+      $('#backBtn').classList.add('hide'); disarmBack();
       renderScenarios();
       show('vChoose');
       $('#phaseText').textContent = '이야기 고르기';
@@ -336,6 +398,7 @@ async function tick(){
       return;
     }
     scenariosDrawn = false;   // 다음 이야기를 위해 초기화
+    $('#backBtn').classList.remove('hide');
 
     // 문두는 선택된 시나리오의 것
     const sc = story.scenarios.find(x => x.id === st.scenarioId) || {};
@@ -357,6 +420,8 @@ async function tick(){
     const clock = (st.remaining === null || st.phase === 'generate') ? '' : st.remaining + 's';
     $('#phaseText').innerHTML = `${st.round}R · ${label} <b>${clock}</b>`;
 
+    if(st.phase !== 'generate') genStartedAt = 0;
+
     if(st.phase === 'idle' || st.phase === 'collect'){
       if(submittedRound === st.round){
         show('vWaiting');
@@ -373,6 +438,10 @@ async function tick(){
       }
     } else if(st.phase === 'generate'){
       show('vGenerate');
+      // 생성은 서버가 남은 시간을 주지 않으므로 실측값으로 추정한다
+      if(genStartedAt === 0) genStartedAt = performance.now();
+      const left = Math.max(0, Math.round(55 - (performance.now() - genStartedAt) / 1000));
+      $('#genLeft').textContent = left ? `약 ${left}초 남음` : '거의 다 됐습니다';
     } else if(st.phase === 'vote'){
       show('vVote'); renderCands(st);
     } else if(st.phase === 'reveal'){

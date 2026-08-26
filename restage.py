@@ -100,9 +100,32 @@ SHOT_HOLD = {
 }
 
 
-def shot_for(index):
+# ── 월드 (연출 프롬프트) ───────────────────────────────
+# worlds/<id>.json 에서 읽는다. 코드를 고치지 않고 톤·샷·배우를 바꿀 수 있다.
+WORLDS_DIR = ROOT / "worlds"
+_world_cache = {}
+
+
+def load_world(world_id):
+    if world_id in _world_cache:
+        return _world_cache[world_id]
+    f = WORLDS_DIR / f"{world_id}.json"
+    if not f.exists():
+        raise FileNotFoundError(f"월드 파일 없음: {f}")
+    import json
+    w = json.loads(f.read_text(encoding="utf-8"))
+    _world_cache[world_id] = w
+    return w
+
+
+def shot_for(index, world=None):
     """씬 순번에 따라 샷을 고른다. 같은 앵글이 연달아 나오지 않게."""
-    return SHOTS[index % len(SHOTS)]
+    shots = (world or {}).get("shots") or SHOTS
+    return shots[index % len(shots)]
+
+
+def hold_shot(world=None):
+    return (world or {}).get("hold") or SHOT_HOLD
 
 
 # ─────────────────────────────────────────────────────────────
@@ -198,7 +221,30 @@ HOLD_CLAUSE = (
 )
 
 
-def restage(prev_frame, out_path, shot, beat=None, refs_dir=REFS_DIR):
+def build_continuity(world):
+    """월드의 배우·의상·색감을 넣어 연속성 규칙을 만든다."""
+    return (
+        "You are given reference photographs of an actor, followed by ONE film still that is "
+        "the last frame of the previous shot.\n\n"
+        "TASK: produce the FIRST FRAME OF THE NEXT MOMENT in the same scene.\n\n"
+        "MUST STAY THE SAME (continuity):\n"
+        "· THE ACTOR'S FACE — THIS IS THE SINGLE MOST IMPORTANT REQUIREMENT.\n"
+        f"  {world['character']}\n"
+        "  The face must be the man in the reference photographs and no one else. "
+        "The face in the previous film still HAS DRIFTED and is NOT reliable. "
+        "Where the previous still and the references disagree about his face, "
+        "THE REFERENCES WIN — repaint the face to match them. "
+        "If a viewer would not immediately recognise him as the man in the reference "
+        "photographs, the output is WRONG.\n"
+        f"· His wardrobe: {world['wardrobe']}\n"
+        "· The location, set dressing and everything in the environment from the previous still.\n"
+        f"· The grade and light: {world['grade']}\n\n"
+        "· IGNORE the reference photographs' own backgrounds and lighting — "
+        "they exist only to identify his face and clothing.\n\n"
+    )
+
+
+def restage(prev_frame, out_path, shot, beat=None, refs_dir=None, world=None):
     """직전 프레임 → 다음 컷의 시작 프레임.
 
     shot : SHOTS 항목
@@ -209,6 +255,9 @@ def restage(prev_frame, out_path, shot, beat=None, refs_dir=REFS_DIR):
     from PIL import Image
 
     prev_frame, out_path = Path(prev_frame), Path(out_path)
+    if isinstance(world, str):
+        world = load_world(world)
+    refs_dir = refs_dir or (ROOT / world["refsDir"] if world else REFS_DIR)
     # 레퍼런스가 많을수록 느리다. 얼굴 정보가 많은 순으로 3장만.
     order = ["ref_closeup", "ref_quarter", "ref_full", "ref_front", "ref_profile"]
     pool = {p.stem: p for p in Path(refs_dir).glob("*.png")}
@@ -218,7 +267,9 @@ def restage(prev_frame, out_path, shot, beat=None, refs_dir=REFS_DIR):
         raise FileNotFoundError(f"배우 레퍼런스 없음: {refs_dir}")
 
     clause = HOLD_CLAUSE if shot.get("hold") else CHANGE_CLAUSE
-    prompt = DIRECTOR + "\n" + CONTINUITY + clause + shot["desc"]
+    director = (world or {}).get("director") or DIRECTOR
+    continuity = build_continuity(world) if world else CONTINUITY
+    prompt = director + "\n" + continuity + clause + shot["desc"]
     if beat:
         prompt += (f'\n\nWHAT THIS NEW SHOT SHOULD SHOW:\n"{beat}"\n'
                    "Compose the frame so this is clearly visible.")

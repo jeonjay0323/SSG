@@ -1,0 +1,24 @@
+{
+  "id": "hunter",
+  "title": "게이트",
+  "logline": "도심 한복판에 등급 미측정 게이트가 열렸다. 그는 혼자 그 앞에 섰다.",
+  "world": "hunter_manhwa",
+  "poster": "/scenes/worlds/hunter_manhwa/intro.png",
+  "lead": "게이트 안에서 나온 것은,",
+  "scenes": [
+    {
+      "n": 1,
+      "label": "게이트 앞",
+      "caption": "등급 미측정. 그는 혼자 게이트 앞에 섰다.",
+      "image": "/scenes/worlds/hunter_manhwa/intro.png",
+      "video": "/clips/hunter_intro.mp4",
+      "holdSeconds": 9
+    }
+  ],
+  "generation": {
+    "startFrame": "/scenes/worlds/hunter_manhwa/seed.png",
+    "tier": "lite",
+    "seconds": 4,
+    "restageEvery": 2
+  }
+}
