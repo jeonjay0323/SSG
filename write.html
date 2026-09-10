@@ -69,6 +69,20 @@
     border-bottom:1px solid var(--outline-light);
   }
 
+  input#nickInput{
+    width:100%;border:none;outline:none;background:none;
+    color:var(--chacole);font-family:'Pretendard';font-weight:600;
+    font-size:22px;line-height:1.6;padding:6px 0;
+    -webkit-user-select:text;user-select:text;caret-color:var(--violet);
+  }
+  input#nickInput::placeholder{color:var(--dust);font-weight:400}
+  .btn-plain{
+    width:100%;margin-top:10px;padding:12px;border-radius:4px;background:none;
+    border:1px solid var(--outline-light);color:var(--dust);
+    font-family:var(--brand);font-size:14px;transition:opacity .15s;
+  }
+  .btn-plain:hover{opacity:.7}
+
   textarea{
     width:100%;min-height:104px;resize:none;border:none;outline:none;background:none;
     color:var(--chacole);font-family:'Pretendard';font-weight:400;font-size:16px;line-height:1.7;
@@ -103,6 +117,7 @@
   .scen .b{padding:14px 15px 16px}
   .scen .t{font-family:var(--brand);font-weight:700;font-size:18px;color:var(--on-surface)}
   .scen .l{margin-top:6px;font-size:13px;line-height:1.6;color:var(--dust)}
+  .scen .st{margin-top:8px;font-family:var(--brand);font-size:11px;color:var(--dust)}
   .scen .lead{
     margin-top:12px;padding-top:12px;border-top:1px solid var(--outline-light);
     margin-bottom:0;font-size:14px;
@@ -118,6 +133,7 @@
   .cand .media{width:100%;aspect-ratio:16/9;background:var(--black);position:relative}
   .cand .media video,.cand .media img{width:100%;height:100%;object-fit:cover;display:block}
   .cand .b{padding:12px 13px}
+  .cand .t b{color:var(--violet-text)}
   .cand .t{font-size:14px;line-height:1.6;color:var(--chacole)}
   .cand .bar{margin-top:10px;height:4px;border-radius:4px;background:var(--outline-light);overflow:hidden}
   .cand .bar i{display:block;height:100%;background:var(--violet);width:0;transition:width .5s ease}
@@ -149,9 +165,12 @@
 <body>
 
 <header>
-  <div class="logo">슥</div>
   <div class="hrow">
-    <button class="btn-ghost hide" id="backBtn">처음으로</button>
+    <button class="btn-ghost hide" id="homeBtn" aria-label="이야기 고르기로 돌아가기">← 홈</button>
+    <div class="logo">슥</div>
+  </div>
+  <div class="hrow">
+    <button class="btn-ghost hide" id="nickBtn"></button>
     <div class="phase"><span class="dot"></span><span id="phaseText">연결 중</span></div>
   </div>
 </header>
@@ -161,6 +180,23 @@
   <h2 id="inviteText" style="margin-bottom:4px">문장을 고르고, 이야기를 이어 만들어볼까요?</h2>
   <div class="sub" style="margin-bottom:16px">하나를 고르면 그 이야기가 시작됩니다.</div>
   <div id="scenarios"></div>
+</section>
+
+<!-- 닉네임 -->
+<section id="vNick" class="hide">
+  <div class="card">
+    <div class="ctx" id="nickCtx"></div>
+    <h2 style="margin-bottom:6px">어떻게 불러드릴까요?</h2>
+    <div class="sub" style="margin-bottom:14px">
+      큰 화면에 문장과 함께 표시됩니다.
+    </div>
+    <input id="nickInput" type="text" maxlength="12" placeholder="닉네임"
+           autocomplete="off" autocorrect="off" spellcheck="false">
+    <div class="count" id="nickCount">0 / 12</div>
+  </div>
+  <div style="height:14px"></div>
+  <button class="btn" id="nickSave" disabled>이 이름으로 시작</button>
+  <button class="btn-plain" id="nickSkip">이름 없이 시작</button>
 </section>
 
 <!-- 접수 -->
@@ -243,31 +279,93 @@ let myVote = null;
 let lastPhase = null, lastRound = -1;
 
 function show(id){
-  ['vChoose','vSubmit','vWaiting','vGenerate','vVote','vReveal']
+  ['vChoose','vNick','vSubmit','vWaiting','vGenerate','vVote','vReveal']
     .forEach(v => $('#'+v).classList.toggle('hide', v !== id));
 }
 
+/* ── 닉네임 ──
+   이야기를 고른 뒤 한 번만 묻는다. 큰 화면에 문장과 함께 뜨기 때문에
+   "내 문장이 저기 있다"를 알아보게 하는 장치다. 건너뛸 수 있다. */
+/* 이름은 기억하되(다음에 자동으로 채워준다), "물어봤다"는 사실은 기억하지 않는다.
+   전시에서는 이야기를 새로 고를 때마다 새 사람일 수 있다 — 매번 물어야 한다.
+   다만 화면이 잠겼다 돌아온 경우까지 다시 묻지는 않으려고
+   sessionStorage 를 쓴다(탭이 살아 있는 동안만 유지). */
+let nick = localStorage.getItem('sk_nick') || '';
+let nickAsked = sessionStorage.getItem('sk_nick_asked') === '1';
+
+const nickIn = $('#nickInput');
+nickIn.addEventListener('input', () => {
+  const v = nickIn.value.trim();
+  $('#nickCount').textContent = `${v.length} / 12`;
+  $('#nickSave').disabled = v.length === 0;
+  $('#nickSave').textContent = v ? `${withRo(v)} 시작` : '이 이름으로 시작';
+});
+$('#nickSave').addEventListener('click', () => setNick(nickIn.value.trim()));
+$('#nickSkip').addEventListener('click', () => setNick(''));
+/* 받침에 따라 '로/으로' — "제이 으로" 같은 문장이 나오지 않게 */
+function withRo(name){
+  const c = name.charCodeAt(name.length - 1);
+  if(c >= 0xac00 && c <= 0xd7a3){
+    const jong = (c - 0xac00) % 28;
+    return name + (jong === 0 || jong === 8 ? '로' : '으로');
+  }
+  return name + '(으)로';
+}
+
+function setNick(v){
+  nick = v;
+  nickAsked = true;
+  localStorage.setItem('sk_nick', v);
+  sessionStorage.setItem('sk_nick_asked', '1');
+  paintNickBtn();
+}
+function paintNickBtn(){
+  const b = $('#nickBtn');
+  b.textContent = nick || '이름 없음';
+  b.classList.toggle('hide', !myTrack);
+}
+$('#nickBtn').addEventListener('click', () => {
+  nickAsked = false;
+  sessionStorage.removeItem('sk_nick_asked');
+});
+
+/* 홈 — 이야기를 지우지 않고 선택 화면으로 돌아간다 */
+$('#homeBtn').addEventListener('click', () => {
+  myTrack = null;
+  localStorage.removeItem('sk_track');
+  submittedRound = -1; myVote = null; scenariosDrawn = false;
+});
+
 /* 시나리오 선택 — 아직 이야기가 시작되지 않았을 때만 */
 let scenariosDrawn = false;
-function renderScenarios(){
-  if(scenariosDrawn || !story?.scenarios) return;
-  scenariosDrawn = true;
+function renderScenarios(st){
+  if(!story?.scenarios) return;
   $('#inviteText').textContent = story.invite || '이야기를 골라주세요';
-  $('#scenarios').innerHTML = story.scenarios.map(sc => `
+  const state = {};
+  (st?.tracks || []).forEach(t => state[t.id] = t);
+  const sig = (st?.tracks || []).map(t => `${t.id}${t.phase}${t.canon.length}`).join('|');
+  if($('#scenarios').dataset.sig === sig && scenariosDrawn) return;
+  $('#scenarios').dataset.sig = sig; scenariosDrawn = true;
+
+  $('#scenarios').innerHTML = story.scenarios.map(sc => {
+    const t = state[sc.id] || {};
+    const n = (t.canon || []).length;
+    const ph = {idle:'참여 기다리는 중', collect:'지금 접수 중',
+                generate:'장면 만드는 중', vote:'투표 중',
+                reveal:'방금 이어졌습니다'}[t.phase] || '';
+    return `
     <div class="scen" data-id="${sc.id}">
       <img class="ph" src="${sc.poster}" alt="">
       <div class="b">
         <div class="t">${esc(sc.title)}</div>
         <div class="l">${esc(sc.logline)}</div>
-        <div class="lead">${esc(sc.lead)} …</div>
+        <div class="lead">${esc(n ? (t.canon[n-1].text) : sc.lead)} …</div>
+        <div class="st">${n}번째 장면까지 · ${ph}</div>
       </div>
-    </div>`).join('');
+    </div>`;
+  }).join('');
   $('#scenarios').querySelectorAll('.scen').forEach(el => {
-    el.onclick = async () => {
-      el.classList.add('sel');
-      const res = await post('/api/pick', {scenarioId: el.dataset.id});
-      if(!res.ok){ el.classList.remove('sel'); toast(res.message); }
-    };
+    el.onclick = () => { joinTrack(el.dataset.id); scenariosDrawn = false; };
   });
 }
 function toast(msg){
@@ -297,7 +395,8 @@ $('#send').addEventListener('click', async () => {
   sending = true;
   $('#send').disabled = true;
   try{
-    const res = await post('/api/submit', {text: ta.value.trim()});
+    const res = await post('/api/submit',
+      {scenarioId: myTrack, text: ta.value.trim(), nick});
     if(res.ok){
       // 라운드 번호는 서버 응답에서 받는다.
       // lastRound 를 쓰면 폴링이 아직 안 돈 시점에 -1 이 들어가 입력 화면으로 되돌아간다.
@@ -319,27 +418,7 @@ $('#send').addEventListener('click', async () => {
 
 /* ── 처음으로 ──
    전시에서 실수로 이야기가 날아가면 곤란하므로 두 번 눌러야 실행된다. */
-let backArmed = false, backTimer = null;
-$('#backBtn').addEventListener('click', async () => {
-  if(!backArmed){
-    backArmed = true;
-    $('#backBtn').textContent = '정말 처음으로?';
-    $('#backBtn').classList.add('arm');
-    clearTimeout(backTimer);
-    backTimer = setTimeout(disarmBack, 4000);
-    return;
-  }
-  disarmBack();
-  const res = await post('/api/reset', {});
-  toast(res.message || '처음으로 돌아갑니다');
-  submittedRound = -1; myVote = null; scenariosDrawn = false;
-});
-function disarmBack(){
-  backArmed = false;
-  $('#backBtn').textContent = '처음으로';
-  $('#backBtn').classList.remove('arm');
-  clearTimeout(backTimer);
-}
+
 
 /* ── 투표 ── */
 function renderCands(st){
@@ -351,7 +430,7 @@ function renderCands(st){
           : c.still ? `<img src="${c.still}" alt="">` : ''}
       </div>
       <div class="b">
-        <div class="t">${esc(c.text)}</div>
+        <div class="t">${c.nick ? `<b>${esc(c.nick)}</b> ` : ''}${esc(c.text)}</div>
         <div class="bar"><i style="width:${(c.votes/total*100).toFixed(0)}%"></i></div>
         <div class="v"><span>${myVote===c.id?'내 선택':''}</span><span>${c.votes}표</span></div>
       </div>
@@ -359,7 +438,7 @@ function renderCands(st){
 
   $('#cands').querySelectorAll('.cand').forEach(el => {
     el.onclick = async () => {
-      const res = await post('/api/vote', {candidateId: el.dataset.id});
+      const res = await post('/api/vote', {scenarioId: myTrack, candidateId: el.dataset.id});
       if(res.ok){ myVote = el.dataset.id; toast(res.message); }
       else toast(res.message);
     };
@@ -369,6 +448,17 @@ const esc = s => String(s).replace(/[&<>"']/g,
   c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 
 /* ── 폴링 ── */
+let myTrack = localStorage.getItem('sk_track') || null;
+
+function joinTrack(sid){
+  myTrack = sid;
+  localStorage.setItem('sk_track', sid);
+  submittedRound = -1; myVote = null;
+  // 새 이야기에 들어갈 때마다 이름을 다시 묻는다 (앞사람 이름을 물려받지 않게)
+  nickAsked = false;
+  sessionStorage.removeItem('sk_nick_asked');
+}
+
 async function tick(){
   try{
     // story 를 한 번만 읽으면 배포 후에도 옛 시나리오가 계속 보인다
@@ -379,80 +469,95 @@ async function tick(){
                      !== JSON.stringify((story?.scenarios||[]).map(x=>x.id));
         story = fresh; storyAt = performance.now();
         maxChars = story.handoff?.maxChars || 40;
-        if(changed) scenariosDrawn = false;      // 카드 다시 그리기
+        if(changed){ scenariosDrawn = false; myTrack = null; }
       }
     }
     if(!story){ setTimeout(tick, POLL); return; }
-    const st = await fetch('/api/round').then(r=>r.json());
-    if(sending){ setTimeout(tick, POLL); return; }   // 전송 중에는 화면을 건드리지 않는다
 
-    // 아직 이야기가 정해지지 않았으면 선택 화면
-    if(!st.scenarioId){
-      lastRound = st.round;      // 선택 화면에서도 라운드를 놓치지 않는다
-      submittedRound = -1;
-      $('#backBtn').classList.add('hide'); disarmBack();
-      renderScenarios();
+    const st = await fetch('/api/round').then(r=>r.json());
+    if(sending){ setTimeout(tick, POLL); return; }
+
+    const t = st.tracks.find(x => x.id === myTrack);
+
+    // 아직 어느 이야기에도 안 들어갔으면 선택 화면
+    if(!t){
+      renderScenarios(st);
       show('vChoose');
+      $('#homeBtn').classList.add('hide');
+      $('#nickBtn').classList.add('hide');
       $('#phaseText').textContent = '이야기 고르기';
       setTimeout(tick, POLL);
       return;
     }
-    scenariosDrawn = false;   // 다음 이야기를 위해 초기화
-    $('#backBtn').classList.remove('hide');
+    $('#homeBtn').classList.remove('hide');
+    paintNickBtn();
 
-    // 문두는 선택된 시나리오의 것
-    const sc = story.scenarios.find(x => x.id === st.scenarioId) || {};
+    // 이야기를 고른 직후 한 번, 이름을 묻는다
+    if(!nickAsked){
+      const scn = (story.scenarios || []).find(x => x.id === t.id) || {};
+      $('#nickCtx').textContent = scn.title ? `〈${scn.title}〉에 참여합니다` : '';
+      if(!$('#vNick').classList.contains('shown')){
+        $('#vNick').classList.add('shown');
+        nickIn.value = nick;                       // 지난 이름을 미리 채워둔다
+        $('#nickCount').textContent = `${nick.length} / 12`;
+        $('#nickSave').disabled = nick.length === 0;
+        $('#nickSave').textContent = nick ? `${withRo(nick)} 시작` : '이 이름으로 시작';
+      }
+      show('vNick');
+      $('#phaseText').textContent = '이름 정하기';
+      setTimeout(tick, POLL);
+      return;
+    }
+    $('#vNick').classList.remove('shown');
 
-    // 이어쓸 지점은 '가장 최근에 확정된 장면'이다.
-    // 고정 문두만 보여주면 이야기가 진행돼도 첫 라운드 문장에 멈춰 있게 된다.
-    const last = st.canon?.length ? st.canon[st.canon.length - 1] : null;
-    $('#ctxLabel').textContent = last ? `씬 ${last.n}까지의 이야기` : sc.title || '이야기의 시작';
+    const sc = (story.scenarios || []).find(x => x.id === t.id) || {};
+    const last = t.canon?.length ? t.canon[t.canon.length - 1] : null;
+    $('#ctxLabel').textContent = last ? `${sc.title} · 씬 ${last.n}까지` : (sc.title || '');
     $('#lead').textContent = last ? last.text : (sc.lead || '');
 
-    // 라운드가 바뀌면 내 상태 초기화
-    if(st.round !== lastRound){
-      lastRound = st.round; myVote = null;
-      if(submittedRound !== st.round) submittedRound = -1;
+    if(t.round !== lastRound){
+      lastRound = t.round; myVote = null;
+      if(submittedRound !== t.round) submittedRound = -1;
     }
 
     const label = {idle:'대기', collect:'접수', generate:'생성',
-                   vote:'투표', reveal:'발표'}[st.phase] || st.phase;
-    const clock = (st.remaining === null || st.phase === 'generate') ? '' : st.remaining + 's';
-    $('#phaseText').innerHTML = `${st.round}R · ${label} <b>${clock}</b>`;
+                   vote:'투표', reveal:'발표', finale:'완결'}[t.phase] || t.phase;
+    const clock = (t.remaining === null || t.phase === 'generate') ? '' : t.remaining + 's';
+    $('#phaseText').innerHTML = `${label} <b>${clock}</b>`;
 
-    if(st.phase !== 'generate') genStartedAt = 0;
+    if(t.phase !== 'generate') genStartedAt = 0;
 
-    if(st.phase === 'idle' || st.phase === 'collect'){
-      if(submittedRound === st.round){
+    if(t.phase === 'idle' || t.phase === 'collect'){
+      if(submittedRound === t.round){
         show('vWaiting');
-        // 투표는 동시 참여가 있을 때만 열린다 — 접수 창이 닫혀야 확정된다
-        $('#waitCount').textContent = st.poolCount > 1
-          ? `${st.poolCount}명이 참여했습니다 · 곧 투표가 열립니다`
+        $('#waitCount').textContent = t.poolCount > 1
+          ? `${t.poolCount}명이 참여했습니다 · 곧 투표가 열립니다`
           : '다른 분이 참여하면 투표가 열립니다';
       } else {
         show('vSubmit');
-        $('#poolNote').textContent = st.phase === 'idle'
+        $('#poolNote').textContent = t.phase === 'idle'
           ? '첫 번째로 보내보세요'
-          : `${st.poolCount}명이 이미 보냈습니다 · ${st.remaining}초 남음`;
+          : `${t.poolCount}명이 이미 보냈습니다 · ${t.remaining}초 남음`;
         $('#send').disabled = ta.value.trim().length === 0;
       }
-    } else if(st.phase === 'generate'){
+    } else if(t.phase === 'generate'){
       show('vGenerate');
-      // 생성은 서버가 남은 시간을 주지 않으므로 실측값으로 추정한다
       if(genStartedAt === 0) genStartedAt = performance.now();
       const left = Math.max(0, Math.round(55 - (performance.now() - genStartedAt) / 1000));
       $('#genLeft').textContent = left ? `약 ${left}초 남음` : '거의 다 됐습니다';
-    } else if(st.phase === 'vote'){
-      show('vVote'); renderCands(st);
-    } else if(st.phase === 'reveal'){
+    } else if(t.phase === 'vote'){
+      show('vVote'); renderCands(t);
+    } else if(t.phase === 'finale'){
       show('vReveal');
-      const w = st.candidates.find(c => c.id === st.winner);
+      $('#winnerText').textContent = '이야기가 완결됐습니다';
+      $('#winnerVotes').textContent = `${t.canon.length}개의 장면이 이어졌습니다`;
+    } else if(t.phase === 'reveal'){
+      show('vReveal');
+      const w = t.candidates.find(c => c.id === t.winner);
       $('#winnerText').textContent = w ? w.text : '';
       $('#winnerVotes').textContent = !w ? ''
-        : st.contested ? `${w.votes}표로 선택됐습니다`
-        : '단독 참여로 바로 이어집니다';
+        : t.contested ? `${w.votes}표로 선택됐습니다` : '단독 참여로 바로 이어집니다';
     }
-    lastPhase = st.phase;
   }catch(e){
     $('#phaseText').textContent = '연결 끊김';
   }
