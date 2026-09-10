@@ -1,0 +1,11 @@
+.git/
+__pycache__/
+*.pyc
+canon.json
+canon.tmp
+scenes/refs_old/
+scenes/chain/
+scenes/**/_*.png
+input.html
+generate_intro.py
+generate_refs.py

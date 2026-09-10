@@ -15,7 +15,7 @@ COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
 # 앱 코드
-COPY server.py storage.py frames.py restage.py fix_face.py story.json ./
+COPY server.py storage.py frames.py restage.py beat.py fix_face.py story.json ./
 # 이야기와 연출 프롬프트 (코드 밖에서 관리)
 COPY scenarios/ ./scenarios/
 COPY worlds/ ./worlds/
