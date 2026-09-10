@@ -185,9 +185,11 @@ def build_prompt(motion_key, extra=None, beat=None, has_refs=False, world=None):
         parts.append(
             "STORY BEAT — THIS IS THE MOST IMPORTANT INSTRUCTION. "
             "The shot exists to show this and nothing else:\n"
-            f'"{beat}"\n'
-            "Render this literally and clearly. If the rest of these notes conflict "
-            "with the story beat, the story beat wins."
+            f"{beat}\n"
+            "Render this as things and actions that a camera can see. "
+            "NEVER render it as written words — no captions, no subtitles, no signage, "
+            "no readable text, no letters or characters anywhere in the frame. "
+            "If the rest of these notes conflict with the story beat, the story beat wins."
         )
     parts.append(MOTION_PRESETS[motion_key])
     if beat:
