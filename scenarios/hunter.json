@@ -19,6 +19,7 @@
     "startFrame": "/scenes/worlds/hunter_manhwa/seed.png",
     "tier": "lite",
     "seconds": 4,
-    "restageEvery": 2
+    "restageEvery": 2,
+    "aspect": "9:16"
   }
 }

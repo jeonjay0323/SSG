@@ -213,10 +213,12 @@ CHANGE_CLAUSE = (
 
 # 앵글을 유지하는 경우 — 바꿀 것은 얼굴뿐임을 못박는다
 HOLD_CLAUSE = (
-    "WHAT TO ACTUALLY CHANGE — ONLY THIS:\n"
-    "· The man's face, corrected to match the reference photographs.\n"
-    "Everything else in the frame stays pixel-for-pixel as close to the previous still "
-    "as possible. This is a repair of one face, not a new photograph.\n\n"
+    "CAMERA STAYS, THE MOMENT MOVES ON:\n"
+    "· Keep the camera exactly where it was — same angle, distance, framing, lens.\n"
+    "· Correct the actor's face to match the reference photographs.\n"
+    "· BUT the scene has moved forward: what the STORY BEAT describes must now be "
+    "visible in this frame. This is the next moment from the same camera position, "
+    "not a copy of the previous still.\n\n"
     "CAMERA:\n"
 )
 
@@ -244,7 +246,8 @@ def build_continuity(world):
     )
 
 
-def restage(prev_frame, out_path, shot, beat=None, refs_dir=None, world=None):
+def restage(prev_frame, out_path, shot, beat=None, refs_dir=None, world=None,
+            aspect="16:9"):
     """직전 프레임 → 다음 컷의 시작 프레임.
 
     shot : SHOTS 항목
@@ -271,8 +274,12 @@ def restage(prev_frame, out_path, shot, beat=None, refs_dir=None, world=None):
     continuity = build_continuity(world) if world else CONTINUITY
     prompt = director + "\n" + continuity + clause + shot["desc"]
     if beat:
-        prompt += (f'\n\nWHAT THIS NEW SHOT SHOULD SHOW:\n"{beat}"\n'
-                   "Compose the frame so this is clearly visible.")
+        prompt += (
+            f"\n\nSTORY BEAT — what this frame must show:\n{beat}\n"
+            "Compose the frame so this is clearly visible. "
+            "Render it as things and actions, never as written words: no captions, "
+            "no signage, no readable text, no letters anywhere in the image."
+        )
 
     parts = [Image.open(str(r)) for r in refs] + [Image.open(str(prev_frame)), prompt]
 
@@ -284,7 +291,7 @@ def restage(prev_frame, out_path, shot, beat=None, refs_dir=None, world=None):
             res = client.models.generate_content(
                 model=MODEL, contents=parts,
                 config=types.GenerateContentConfig(
-                    image_config=types.ImageConfig(aspect_ratio="16:9")),
+                    image_config=types.ImageConfig(aspect_ratio=aspect)),
             )
             for cand in res.candidates or []:
                 for part in cand.content.parts or []:

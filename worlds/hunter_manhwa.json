@@ -4,17 +4,11 @@
   "toneRef": "〈나 혼자만 레벨업〉",
   "medium": "manhwa",
   "refsDir": "scenes/worlds/hunter_manhwa/refs",
-
   "character": "A Korean man in his late twenties, drawn as a Korean webtoon (manhwa) protagonist. Sharp angular jawline, narrow chin, straight nose, thin determined mouth. Dark eyes with sharp upper lids and a hard level gaze — narrow rather than large. Black hair, slightly overgrown, falling across the forehead. Lean athletic build. Handsome in a cold, severe way.",
-
   "wardrobe": "Modern hunter gear: a fitted black tactical jacket with a high collar over a dark shirt, reinforced forearm guards, black cargo trousers and boots. A plain single-edged blade sheathed at his back. Functional and dark — no capes, no armour plates, no fantasy ornament.",
-
   "grade": "High-contrast digital colour with deep blacks and a cold blue-violet cast. Mana light glows electric blue-purple and spills onto surfaces. Strong rim light separating the figure from a dark background. Saturated but never pastel — this is a dark, dramatic palette.",
-
   "director": "DIRECTION — this is a panel from a Korean webtoon (manhwa) in the style of 'Solo Leveling'. Digitally painted comic art: clean confident linework over rendered digital colour, cel-based shading with painted highlights, heavy contrast. NOT photorealistic, NOT a live-action photograph, NOT Japanese anime cel style, NOT 3D CGI.\n\nTHE FOURTH WALL IS NEVER BROKEN:\nHe does not know he is being watched. He never looks out of the panel at the reader, never poses for the viewer. His eyes are locked on something inside the scene.\n\nCOMPOSITION — webtoon panel logic:\nDramatic and graphic. Low angles that make him loom, high angles that make the space swallow him, steep perspective and foreshortening. Strong diagonals. He may be a small figure dwarfed by an enormous dark space, or a tight face filling the panel. Heavy negative space is normal. Backs, shoulders and severe profiles are common.\n\nRENDERING:\nBold black shadow shapes, sharp specular highlights, glowing mana effects with soft bloom and particle sparks. Motion and impact suggested with speed lines, cracked ground, floating debris. Textures stay painterly, never photographic.\n\nLIGHT AND COLOUR:\nDark environments cut by cold blue-violet glow. Strong rim light along the jaw and shoulders. Deep crushed blacks are welcome — this is high contrast, unlike a live-action grade.\n\nPERFORMANCE:\nCold and contained. Power reads as stillness: a level stare, a hand resting on a hilt, coat moving in a pressure wave. No shouting faces, no comedic expressions, no chibi deformation.\n\nFORBIDDEN: photorealism, real human skin texture, live-action photography, 3D CGI render, Japanese anime cel style, eye contact with the reader, chibi, super deformed, text, speech bubbles, sound effects, subtitles, captions, watermarks, logos, UI overlays.",
-
-  "negative": "photorealistic, photograph, live action, real human skin texture, 3D CGI render, unreal engine, japanese anime style, chibi, super deformed, looking at the camera, direct eye contact with the lens, posing for the camera, speech bubble, sound effect text, text, subtitles, captions, watermark, logo, UI overlay, pastel colours, flat even lighting, deformed hands, extra limbs, warping, morphing",
-
+  "negative": "korean text, hangul, japanese text, chinese characters, letters, words, handwriting, signage, banner, poster text, readable screen, title card, opening credits, photorealistic, photograph, live action, real human skin texture, 3D CGI render, unreal engine, japanese anime style, chibi, super deformed, looking at the camera, direct eye contact with the lens, posing for the camera, speech bubble, sound effect text, text, subtitles, captions, watermark, logo, UI overlay, pastel colours, flat even lighting, deformed hands, extra limbs, warping, morphing",
   "shots": [
     {
       "key": "low_loom",
@@ -47,7 +41,6 @@
       "desc": "A tilted dutch-angle panel with steep perspective, his blade drawn and body turned mid-motion, speed lines and cracked ground implying force. His gaze follows the action, not the reader."
     }
   ],
-
   "hold": {
     "key": "hold",
     "label": "연속 · 동일 구도",

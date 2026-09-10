@@ -77,76 +77,28 @@ def load_story():
 # ─────────────────────────────────────────────────────────────
 # 라운드 상태
 # ─────────────────────────────────────────────────────────────
-class Engine:
-    def __init__(self, cfg, live, max_gen, budget_usd=None):
+class Track:
+    """이야기 하나. 시나리오마다 하나씩, 서로 독립적으로 돈다."""
+
+    def __init__(self, scenario, cfg):
         self.lock = threading.RLock()
         self.cfg = cfg
-        self.live = live
-        self.max_gen = max_gen
-        self.budget_usd = budget_usd     # None = 무제한
+        self.sid = scenario["id"]
+        self.scenario = scenario
 
-        self.scenario_id = None   # 선택 전에는 None → 폰에 선택 화면이 뜬다
         self.round_n = 0
-        # idle: 첫 제출을 기다리는 상태 (시간 제한 없음)
-        # collect: 첫 제출 이후 열리는 동시 접수 창
-        self.phase = "idle"
-        self.deadline = None    # None = 무기한 (idle 전용)
-        self.pool = []          # [{id, text, voter}]  접수된 문장
-        self.candidates = []    # [{id, text, video, still, status, progress, votes}]
-        self.votes = {}         # voter -> candidate_id
+        self.phase = "idle"       # idle → collect → generate → [vote] → reveal
+        self.deadline = None
+        self.pool = []
+        self.candidates = []
+        self.votes = {}
         self.winner = None
-        self.contested = False  # 이번 라운드에 투표가 열렸는가
-        self.canon = []         # 확정된 관람객 씬들 [{n, text, video, still}]
-
-        self.spent_usd = 0.0
-        self.generated = 0
+        self.contested = False
+        self.canon = []
+        self.cycle = 0        # 완결·초기화 때마다 증가 (체인 프레임 캐시 분리용)
         self.start_round()
 
-    def reset_story(self):
-        """진행 중인 이야기를 접고 시나리오 선택으로 되돌린다."""
-        with self.lock:
-            title = self.scenario_id
-            self.scenario_id = None
-            self.canon = []
-            self.candidates = []
-            self.votes = {}
-            self.winner = None
-            self.contested = False
-            self.pool = []
-        print(f"\n↺ 이야기 초기화 (이전: {title})", flush=True)
-        return True, "처음으로 돌아갑니다"
-
-    def pick_scenario(self, sid, story):
-        """시나리오 선택. 먼저 고른 사람이 정한다."""
-        valid = {sc["id"] for sc in story["scenarios"]}
-        with self.lock:
-            if self.scenario_id:
-                return False, "이미 이야기가 시작됐습니다"
-            if sid not in valid:
-                return False, "없는 이야기입니다"
-            self.scenario_id = sid
-        title = next(sc["title"] for sc in story["scenarios"] if sc["id"] == sid)
-        print(f"\n▶ 시나리오 선택: {title}", flush=True)
-        return True, title
-
-    def scenario(self, story):
-        if not self.scenario_id:
-            return None
-        return next((sc for sc in story["scenarios"]
-                     if sc["id"] == self.scenario_id), None)
-
-    def can_generate(self):
-        """라이브 생성 가능 여부. 건수·금액 캡을 함께 본다.
-        캡에 닿으면 조용히 드라이런으로 내려간다 — 부스가 죽는 것보다 낫다."""
-        if not self.live:
-            return False
-        if self.generated >= self.max_gen:
-            return False
-        if self.budget_usd is not None and self.spent_usd >= self.budget_usd:
-            return False
-        return True
-
-    # ── 단계 전환 ──
+    # ── 단계 ──
     def _set(self, phase, seconds=None):
         self.phase = phase
         self.deadline = None if seconds is None else time.monotonic() + seconds
@@ -154,31 +106,36 @@ class Engine:
     def start_round(self):
         with self.lock:
             self.round_n += 1
-            self.pool = []
-            self.candidates = []
-            self.votes = {}
-            self.winner = None
-            self.contested = False
-            PRESTAGE.clear()      # 지난 라운드의 선행 리스테이징 폐기
-            self._set("idle")     # 첫 문장이 올 때까지 무기한 대기
-            print(f"\n── 라운드 {self.round_n} · 첫 문장 대기 ──", flush=True)
+            self.pool, self.candidates, self.votes = [], [], {}
+            self.winner, self.contested = None, False
+            for d in (PRESTAGE, BEATS):
+                for k in [k for k in d if k.startswith(self.sid + ":")]:
+                    d.pop(k, None)
+            self._set("idle")
 
     def remaining(self):
         if self.deadline is None:
             return None
         return max(0, round(self.deadline - time.monotonic()))
 
+    def done(self, max_scenes):
+        return len(self.canon) >= max_scenes
+
     # ── 접수 ──
-    # 투표는 '동시 참여가 있었을 때만' 열린다.
-    # 그래서 라운드는 시계가 아니라 첫 제출로 시작하고,
-    # 그 순간부터 collectSeconds 동안 들어온 사람들이 한 묶음이 된다.
-    def submit(self, text, voter):
+    @staticmethod
+    def clean_nick(nick):
+        """닉네임도 큰 화면에 뜨므로 문장과 같은 기준으로 거른다."""
+        n = (nick or "").strip()[:12]
+        if not n:
+            return ""
+        ok, _ = screen_text(n)
+        return n if ok else ""
+
+    def submit(self, text, voter, nick=""):
         text = (text or "").strip()
         with self.lock:
-            if not self.scenario_id:
-                return False, "먼저 이야기를 골라주세요"
             if self.phase not in ("idle", "collect"):
-                return False, "지금은 접수 시간이 아닙니다"
+                return False, "지금은 이 이야기의 접수 시간이 아닙니다"
             if not text:
                 return False, "문장을 입력해주세요"
             if len(text) > self.cfg.get("maxChars", 40):
@@ -187,19 +144,18 @@ class Engine:
                 return False, "이번 라운드엔 이미 참여하셨습니다"
             ok, why = screen_text(text)
             if not ok:
-                # 무엇에 걸렸는지는 알려주지 않는다 — 우회 시도를 부추긴다.
-                print(f"  ✗ 차단({why}): {text[:30]}", flush=True)
+                print(f"  ✗ [{self.sid}] 차단({why}): {text[:24]}", flush=True)
                 return False, "다시 써주시겠어요? 이야기에 어울리는 한 문장이면 좋겠습니다"
 
             opened = self.phase == "idle"
             if opened:
                 self._set("collect", self.cfg["collectSeconds"])
-            self.pool.append({"id": uuid.uuid4().hex[:8], "text": text, "voter": voter})
+            sub = {"id": f"{self.sid}:{uuid.uuid4().hex[:8]}", "text": text,
+                   "voter": voter, "nick": self.clean_nick(nick)}
+            self.pool.append(sub)
             n = len(self.pool)
-        if opened:
-            print(f"  ▷ 접수 창 열림 ({self.cfg['collectSeconds']}초)", flush=True)
-        print(f"  + 접수 {n}건: {text[:30]}", flush=True)
-        return True, n
+        print(f"  + [{self.sid}] 접수 {n}건: {text[:24]}", flush=True)
+        return True, sub
 
     # ── 투표 ──
     def vote(self, cand_id, voter):
@@ -209,47 +165,91 @@ class Engine:
             if not any(c["id"] == cand_id for c in self.candidates):
                 return False, "없는 후보입니다"
             first = voter not in self.votes
-            self.votes[voter] = cand_id      # 바꿔 찍기는 허용, 중복 가산은 안 됨
-            self._recount()
+            self.votes[voter] = cand_id
+            tally = {}
+            for cid in self.votes.values():
+                tally[cid] = tally.get(cid, 0) + 1
+            for c in self.candidates:
+                c["votes"] = tally.get(c["id"], 0)
             return True, ("투표 완료" if first else "투표를 변경했습니다")
 
-    def _recount(self):
-        tally = {}
-        for cid in self.votes.values():
-            tally[cid] = tally.get(cid, 0) + 1
-        for c in self.candidates:
-            c["votes"] = tally.get(c["id"], 0)
+    def reset(self):
+        with self.lock:
+            self.canon = []
+            self.round_n = 0
+            self.cycle += 1
+        self.start_round()
 
-    # ── 상태 스냅샷 ──
     def snapshot(self):
         with self.lock:
             return {
-                "scenarioId": self.scenario_id,
+                "id": self.sid,
+                "title": self.scenario["title"],
+                "lead": self.scenario.get("lead", ""),
+                "poster": self.scenario.get("poster"),
                 "round": self.round_n,
                 "phase": self.phase,
                 "remaining": self.remaining(),
                 "poolCount": len(self.pool),
-                # 큰 화면에 "방금 들어온 문장"을 띄우기 위해 최근 것부터 몇 개만
-                "pool": [p["text"] for p in self.pool][-6:],
+                "pool": [{"text": p["text"], "nick": p.get("nick", "")}
+                         for p in self.pool][-4:],
                 "candidates": [
-                    {k: c[k] for k in ("id", "text", "video", "still", "status", "progress", "votes")}
+                    {k: c.get(k) for k in ("id", "text", "nick", "video", "still",
+                                            "status", "progress", "votes")}
                     for c in self.candidates
                 ],
                 "winner": self.winner,
-                "contested": self.contested,   # 투표가 열린 라운드인가
+                "contested": self.contested,
                 "canon": self.canon,
                 "totalVotes": len(self.votes),
-                "spentUsd": round(self.spent_usd, 2),
-                "generated": self.generated,
-                "live": self.can_generate(),
-                "budgetUsd": self.budget_usd,
             }
 
 
-# ─────────────────────────────────────────────────────────────
-# 생성
-# ─────────────────────────────────────────────────────────────
-REFS_DIR = SCENES_DIR / "refs"
+class Engine:
+    """트랙 3개를 함께 돌린다. 예산·생성 카운터는 전체가 공유한다."""
+
+    def __init__(self, story, cfg, live, max_gen, budget_usd=None):
+        self.lock = threading.RLock()
+        self.cfg = cfg
+        self.story = story
+        self.live = live
+        self.max_gen = max_gen
+        self.budget_usd = budget_usd
+
+        self.spent_usd = 0.0
+        self.generated = 0
+        self.tracks = {sc["id"]: Track(sc, cfg) for sc in story["scenarios"]}
+        print("  트랙: " + " · ".join(t.scenario["title"] for t in self.tracks.values()),
+              flush=True)
+
+    def track(self, sid):
+        return self.tracks.get(sid)
+
+    def can_generate(self):
+        if not self.live:
+            return False
+        if self.generated >= self.max_gen:
+            return False
+        if self.budget_usd is not None and self.spent_usd >= self.budget_usd:
+            return False
+        return True
+
+    def snapshot(self):
+        # 락 순서 역전 방지: 트랙 스냅샷을 먼저 뜨고(각자 tr.lock),
+        # 그 다음에 공유 카운터만 eng.lock 으로 읽는다.
+        # eng.lock 을 쥔 채 tr.lock 을 잡으면 드라이버와 데드락이 난다.
+        tracks = [t.snapshot() for t in list(self.tracks.values())]
+        with self.lock:
+            spent, gen = round(self.spent_usd, 2), self.generated
+            live = self.can_generate()
+        return {
+            "tracks": tracks,
+            "spentUsd": spent,
+            "generated": gen,
+            "live": live,
+            "budgetUsd": self.budget_usd,
+            "maxScenes": self.story.get("maxScenes", 6),
+        }
 
 
 def asset_refs():
@@ -259,12 +259,7 @@ def asset_refs():
     return sorted(str(p) for p in REFS_DIR.glob("*.png"))
 
 
-def active(eng, story):
-    """현재 시나리오. 없으면 첫 번째를 기본값으로 (드라이런·초기화 대비)."""
-    return eng.scenario(story) or story["scenarios"][0]
-
-
-def chain_start_frame(eng, story):
+def chain_start_frame(tr):
     """씬 N 의 시작 프레임 = 직전 확정 씬 영상의 마지막 프레임.
 
     이게 없으면 모든 관람객 씬이 도입부 씬 2 에서 다시 시작해서,
@@ -272,15 +267,17 @@ def chain_start_frame(eng, story):
     """
     # startFrame 은 "/scenes/..." 형태의 URL. 하위 폴더(chain/)가 있으므로
     # 파일명만 떼면 안 되고 /scenes/ 접두사만 벗겨야 한다.
-    rel = active(eng, story)["generation"]["startFrame"].removeprefix("/scenes/")
+    rel = tr.scenario["generation"]["startFrame"].removeprefix("/scenes/")
     default = SCENES_DIR / rel
-    with eng.lock:
-        prev = eng.canon[-1] if eng.canon else None
+    with tr.lock:
+        prev = tr.canon[-1] if tr.canon else None
     if not prev or not prev.get("video"):
         return default
 
     name = Path(prev["video"]).name
-    out = CHAIN_DIR / f"after_scene{prev['n']}.png"
+    # 사이클을 파일명에 넣는다. 완결 후 씬 번호가 1 로 돌아가므로
+    # 이게 없으면 새 이야기가 옛 이야기의 프레임에서 이어진다.
+    out = CHAIN_DIR / f"{tr.sid}c{tr.cycle}_after{prev['n']}.png"
     if out.exists():
         return out
     try:
@@ -306,31 +303,60 @@ def wants_new_angle(gen, scene_idx):
     (둘을 묶어두면 앵글을 유지하는 씬에 레퍼런스가 아예 안 들어간다.)
     restageEvery: 0 = 앵글 항상 고정, 1 = 매 씬 새 앵글, 2 = 한 씬 걸러.
     """
+    # 첫 관람객 씬은 항상 새 앵글이다. 도입부가 던진 질문("문 밖에 있던 것은")에
+    # 답해야 하는데, 구도를 그대로 유지하면 도입부와 거의 같은 그림이 나온다.
+    if scene_idx == 0:
+        return True
     every = gen.get("restageEvery", 1)
     if not every:
         return False
     return scene_idx % every == (every - 1)
 
 
-def prestage(eng, sub_id, text, story):
+# 해석된 장면 묘사 — 리스테이징과 Veo 가 같은 문구를 쓰도록 보관한다
+BEATS = {}
+
+
+def interpret_beat(tr, text, world):
+    """관람객 문장 → 촬영 가능한 묘사. 실패하면 원문."""
+    try:
+        from beat import interpret
+        with tr.lock:
+            prev = tr.canon[-1]["text"] if tr.canon else None
+        return interpret(text, world, prev)
+    except Exception as e:
+        print(f"  ! 문장 해석 실패 ({type(e).__name__}) — 원문 사용", flush=True)
+        return text
+
+
+def prestage(eng, tr, sub_id, text):
     """제출 즉시 다음 컷 프레임을 미리 세운다 (접수 창과 병행).
 
     후보는 접수 마감 때 뽑히지만, 대개 제출 수가 후보 수 이하라
     거의 모든 제출이 그대로 후보가 된다. 미리 만들어두면 헛일이 드물다.
     """
-    with eng.lock:
-        idx = len(eng.canon)
+    with tr.lock:
+        idx = len(tr.canon)
+    gen = tr.scenario["generation"]
+    world_id = tr.scenario.get("world")
+
     def work():
-        from restage import restage, shot_for
-        shot = shot_for(idx)
-        base = chain_start_frame(eng, story)
-        out = CHAIN_DIR / f"staged_{sub_id}.png"
-        restage(base, out, shot, beat=text, world=w)
+        # 얼굴 교정은 매 씬 필수. 앵글만 주기적으로 바꾼다.
+        from restage import restage, shot_for, hold_shot, load_world
+        w = load_world(world_id) if world_id else None
+        shot = shot_for(idx, w) if wants_new_angle(gen, idx) else hold_shot(w)
+        beat = interpret_beat(tr, text, w)
+        base = chain_start_frame(tr)
+        out = CHAIN_DIR / f"staged_{sub_id.replace(':', '_')}.png"
+        restage(base, out, shot, beat=beat, world=w,
+                aspect=gen.get("aspect", "16:9"))
+        BEATS[sub_id] = beat
         return out, shot
+
     PRESTAGE[sub_id] = PRESTAGE_POOL.submit(work)
 
 
-def staged_start_frame(eng, cand, story, prog):
+def staged_start_frame(eng, tr, cand, prog):
     """다음 컷의 시작 프레임을 새로 세운다.
 
     직전 프레임을 그대로 쓰면 얼굴이 밀리고 앵글이 늘 같다.
@@ -347,49 +373,52 @@ def staged_start_frame(eng, cand, story, prog):
         except Exception as e:
             print(f"  ! 선행 리스테이징 실패 ({type(e).__name__})", flush=True)
 
-    base = chain_start_frame(eng, story)
-    with eng.lock:
-        idx = len(eng.canon)
+    base = chain_start_frame(tr)
+    with tr.lock:
+        idx = len(tr.canon)
     try:
         from restage import restage, shot_for, hold_shot, load_world
-        sc = active(eng, story)
+        sc = tr.scenario
         gen = sc["generation"]
         w = load_world(sc["world"]) if sc.get("world") else None
         shot = shot_for(idx, w) if wants_new_angle(gen, idx) else hold_shot(w)
-        out = CHAIN_DIR / f"staged_{cand['id']}.png"
+        out = CHAIN_DIR / f"staged_{cand['id'].replace(':', '_')}.png"
         prog(f"컷 세우는 중 · {shot['label']}")
-        restage(base, out, shot, beat=cand["text"], world=w)
+        beat = BEATS.get(cand["id"]) or interpret_beat(tr, cand["text"], w)
+        BEATS[cand["id"]] = beat
+        restage(base, out, shot, beat=beat, world=w,
+                aspect=gen.get("aspect", "16:9"))
         return out, shot
     except Exception as e:
         print(f"  ! 리스테이징 실패 ({type(e).__name__}) — 원본 프레임 사용", flush=True)
         return base, None
 
 
-def make_candidate_video(eng, cand, story):
-    gen = active(eng, story)["generation"]
+def make_candidate_video(eng, tr, cand):
+    gen = tr.scenario["generation"]
     do_live = eng.can_generate()
 
     def prog(m):
-        with eng.lock:
+        with tr.lock:
             cand["progress"] = m
 
-    start, shot = (staged_start_frame(eng, cand, story, prog)
-                   if do_live else (chain_start_frame(eng, story), None))
+    start, shot = (staged_start_frame(eng, tr, cand, prog)
+                   if do_live else (chain_start_frame(tr), None))
 
     if not do_live:
         prog("드라이런")
         time.sleep(2)
-        with eng.lock:
-            cand["status"] = "ready"
+        with tr.lock:
             cand["still"] = "/scenes/" + start.relative_to(SCENES_DIR).as_posix()
             cand["progress"] = "드라이런"
+            cand["status"] = "ready"        # 마지막
         return
 
     # 리스테이징된 첫 프레임을 즉시 화면에 내보낸다. 생성이 끝날 때까지의
     # 빈 시간이 "내 문장의 첫 프레임을 보는 시간"이 된다.
     try:
         if start and Path(start).parent == CHAIN_DIR:
-            with eng.lock:
+            with tr.lock:
                 cand["still"] = "/staged/" + Path(start).name
     except Exception:
         pass
@@ -401,46 +430,50 @@ def make_candidate_video(eng, cand, story):
             start,
             tier=gen.get("tier", "lite"),
             seconds=gen.get("seconds", 4),
+            aspect=gen.get("aspect", "16:9"),
             # 리스테이징으로 프레이밍이 이미 정해졌으면 카메라를 붙잡아 둔다.
             # 아니면 첫 관람객 씬만 '문 밖이 드러나는' 샷.
             motion=("staged" if shot else
-                    ("reveal_beyond" if not eng.canon else "continue_beyond")),
+                    ("reveal_beyond" if not tr.canon else "continue_beyond")),
             # 관람객 문장은 최우선 지시(beat)로 프롬프트 맨 앞에 놓인다.
             # extra 로 뒤에 붙이면 카메라·정체성 지시에 묻혀 무시된다.
-            beat=cand["text"],
-            world=(__import__("restage").load_world(active(eng, story)["world"])
-                   if active(eng, story).get("world") else None),
-            out_stem=f"r{eng.round_n}_{cand['id']}",
+            beat=BEATS.get(cand["id"]) or cand["text"],
+            world=(__import__("restage").load_world(tr.scenario["world"])
+                   if tr.scenario.get("world") else None),
+            out_stem=f"{tr.sid}_{tr.round_n}_{cand['id'].split(':')[-1]}",
             on_progress=prog,
         )
-        with eng.lock:
+        # 화이트아웃 등으로 끝부분이 못 쓰는 프레임이면 잘라낸다. 안 그러면 클립은
+        # 끝까지 재생되는데 다음 씬은 그 앞 상태에서 시작해 되감기처럼 보인다.
+        # (파일 작업이므로 어떤 락도 잡지 않는다)
+        try:
+            from frames import last_good_frame, duration, trim
+            src = Path(where)
+            safe = cand["id"].replace(":", "_")
+            _, good_ts = last_good_frame(src, CHAIN_DIR / f"probe_{safe}.png")
+            if good_ts < duration(src) - 0.4:
+                trimmed = CHAIN_DIR / f"cut_{safe}.mp4"
+                trim(src, trimmed, good_ts + 0.05)
+                where = str(trimmed)
+                prog(f"끝 정리 ({good_ts:.1f}초)")
+        except Exception as e:
+            print(f"  ! 트림 건너뜀 ({type(e).__name__})", flush=True)
+
+        name = Path(where).name
+        if storage.using_gcs() and Path(where).exists():
+            storage.put_clip(name, Path(where).read_bytes())
+
+        with eng.lock:                      # 공유 카운터
             eng.spent_usd += meta["estimated_usd"]
             eng.generated += 1
-            cand["status"] = "ready"
-            # 화이트아웃 등으로 끝부분이 못 쓰는 프레임이면, 쓸 수 있는 지점까지
-            # 잘라낸다. 안 그러면 클립은 끝까지 재생되는데 다음 씬은 그 앞 상태에서
-            # 시작해 되감기처럼 보인다.
-            try:
-                from frames import last_good_frame, duration, trim
-                src = Path(where)
-                _, good_ts = last_good_frame(src, CHAIN_DIR / f"probe_{cand['id']}.png")
-                if good_ts < duration(src) - 0.4:
-                    trimmed = CHAIN_DIR / f"cut_{cand['id']}.mp4"
-                    trim(src, trimmed, good_ts + 0.05)
-                    where = str(trimmed)
-                    prog(f"끝 정리 ({good_ts:.1f}초)")
-            except Exception as e:
-                print(f"  ! 트림 건너뜀 ({type(e).__name__})", flush=True)
-
-            name = Path(where).name
-            if storage.using_gcs() and Path(where).exists():
-                storage.put_clip(name, Path(where).read_bytes())
+        with tr.lock:
             cand["video"] = "/clips/" + name
             cand["shot"] = shot["label"] if shot else None
             cand["progress"] = "완료"
+            cand["status"] = "ready"        # 반드시 마지막 — 드라이버가 이걸 보고 확정한다
     except Exception as e:
         print(f"  ✗ 생성 실패 {cand['id']}: {str(e)[:150]}", flush=True)
-        with eng.lock:
+        with tr.lock:
             cand["status"] = "ready"          # 실패해도 투표는 진행 — 정지화면으로
             cand["still"] = "/scenes/" + start.relative_to(SCENES_DIR).as_posix()
             cand["progress"] = "생성 실패 · 정지화면"
@@ -534,14 +567,14 @@ def save_snapshot(eng):
     라운드가 확정될 때마다 저장하고, 기동 시 읽어와 이어간다.
     임시 파일에 쓰고 교체 — 쓰는 도중 죽어도 기존 스냅샷이 살아남는다.
     """
+    tracks = {}
+    for sid, t in list(eng.tracks.items()):
+        with t.lock:
+            tracks[sid] = {"round": t.round_n, "canon": list(t.canon)}
     with eng.lock:
-        data = {
-            "scenarioId": eng.scenario_id,
-            "round": eng.round_n,
-            "canon": list(eng.canon),
-            "spentUsd": round(eng.spent_usd, 4),
-            "generated": eng.generated,
-        }
+        data = {"tracks": tracks,
+                "spentUsd": round(eng.spent_usd, 4),
+                "generated": eng.generated}
     try:
         storage.put_state(json.dumps(data, ensure_ascii=False, indent=2))
     except Exception as e:
@@ -558,115 +591,132 @@ def load_snapshot(eng):
         print(f"  ! 스냅샷 읽기 실패: {type(e).__name__} — 새로 시작", flush=True)
         return
     with eng.lock:
-        eng.scenario_id = d.get("scenarioId")
-        eng.canon = d.get("canon", [])
         eng.spent_usd = d.get("spentUsd", 0.0)
         eng.generated = d.get("generated", 0)
-        eng.round_n = max(eng.round_n, d.get("round", 1))
-    if eng.canon:
-        print(f"  ↻ 스냅샷 복구: 씬 {len(eng.canon)}개 · "
+        for sid, td in (d.get("tracks") or {}).items():
+            t = eng.tracks.get(sid)
+            if t:
+                t.canon = td.get("canon", [])
+                t.round_n = max(t.round_n, td.get("round", 1))
+    n = sum(len(t.canon) for t in eng.tracks.values())
+    if n:
+        print(f"  ↻ 스냅샷 복구: 씬 {n}개 · "
               f"생성 {eng.generated}건 · ${eng.spent_usd:.2f}", flush=True)
 
 
-def _commit_winner(eng, story):
-    """당선작을 정사(canon)에 편입. 호출자가 eng.lock 을 잡고 있어야 한다."""
-    w = next((c for c in eng.candidates if c["id"] == eng.winner), None)
+def _commit_winner(eng, tr):
+    """당선작을 그 트랙의 정사(canon)에 편입. 호출자가 tr.lock 을 잡고 있어야 한다."""
+    w = next((c for c in tr.candidates if c["id"] == tr.winner), None)
     if not w:
         return
-    eng.canon.append({
-        "n": len(active(eng, story)["scenes"]) + len(eng.canon) + 1,
-        "text": w["text"], "video": w["video"], "still": w["still"],
-        "votes": w["votes"], "contested": eng.contested,
+    tr.canon.append({
+        "n": len(tr.scenario["scenes"]) + len(tr.canon) + 1,
+        "text": w["text"], "nick": w.get("nick", ""),
+        "video": w["video"], "still": w["still"],
+        "votes": w["votes"], "contested": tr.contested,
         "shot": w.get("shot"),
     })
-    save_snapshot(eng)
+
+
+def advance(eng, tr, story, pool):
+    """트랙 하나의 단계를 한 틱만큼 진행시킨다."""
+    # 생성 완료 감지는 데드라인과 무관하게 매 틱 확인한다.
+    committed = False
+    with tr.lock:
+        if tr.phase == "generate" and tr.candidates and \
+           all(c["status"] == "ready" for c in tr.candidates):
+            if len(tr.candidates) > 1:
+                tr.contested = True
+                tr._set("vote", tr.cfg["voteSeconds"])
+                print(f"  [{tr.sid}] 생성 완료 — 후보 {len(tr.candidates)}개, 투표", flush=True)
+            else:
+                tr.winner = tr.candidates[0]["id"]
+                tr._set("reveal", tr.cfg.get("revealSeconds", 10))
+                _commit_winner(eng, tr)
+                committed = True
+                print(f"  [{tr.sid}] 생성 완료 — 단독, 투표 없이 확정", flush=True)
+            phase, left = tr.phase, tr.remaining()
+            done_here = True
+        else:
+            phase, left = tr.phase, tr.remaining()
+            done_here = False
+
+    # 락 밖에서 저장한다. 안에서 하면 eng.lock 과 순서가 엇갈려 데드락이 난다.
+    if committed:
+        save_snapshot(eng)
+    if done_here:
+        return
+
+    if left is None or left > 0:
+        return
+
+    if phase == "collect":
+        with tr.lock:
+            k = min(tr.cfg["candidates"], len(tr.pool))
+            picked = random.sample(tr.pool, k)
+            tr.candidates = [{
+                "id": p["id"], "text": p["text"], "nick": p.get("nick", ""),
+                "video": None, "still": None,
+                "status": "generating", "progress": "대기", "votes": 0,
+            } for p in picked]
+            tr._set("generate", 600)
+            dropped = len(tr.pool) - k
+        print(f"  [{tr.sid}] 접수 마감 — {k}개"
+              + (f" ({dropped}건 미채택)" if dropped else "")
+              + ("  · 투표 예정" if k > 1 else "  · 단독"), flush=True)
+        for c in tr.candidates:
+            pool.submit(make_candidate_video, eng, tr, c)
+
+    elif phase == "generate":
+        with tr.lock:
+            for c in tr.candidates:
+                if c["status"] != "ready":
+                    c["status"] = "ready"
+                    c["still"] = tr.scenario["generation"]["startFrame"]
+                    c["progress"] = "시간 초과 · 정지화면"
+            tr._set("vote", tr.cfg["voteSeconds"])
+        print(f"  [{tr.sid}] 생성 시간 초과 — 투표로 진행", flush=True)
+
+    elif phase == "vote":
+        with tr.lock:
+            best = max(tr.candidates, key=lambda c: c["votes"])
+            tr.winner = best["id"]
+            tr._set("reveal", tr.cfg.get("revealSeconds", 10))
+            _commit_winner(eng, tr)
+        save_snapshot(eng)              # 락 밖에서
+        print(f"  [{tr.sid}] 투표 마감 — {best['text'][:22]} ({best['votes']}표)", flush=True)
+
+    elif phase == "reveal":
+        if tr.done(story.get("maxScenes", 6)):
+            # 완결된 이야기를 잠시 그대로 둔다. 바로 지우면 완성된 한 편을
+            # 아무도 보지 못한 채 사라진다.
+            with tr.lock:
+                tr._set("finale", tr.cfg.get("finaleSeconds", 25))
+            print(f"  [{tr.sid}] ■ 〈{tr.scenario['title']}〉 완결 — "
+                  f"{tr.cfg.get('finaleSeconds', 25)}초 상영 후 새 이야기", flush=True)
+        else:
+            tr.start_round()
+
+    elif phase == "finale":
+        tr.reset()
+        save_snapshot(eng)
+        print(f"  [{tr.sid}] 새 이야기 시작", flush=True)
 
 
 def driver(eng):
-    """단계 전환을 담당하는 백그라운드 스레드."""
+    """세 트랙을 동시에 굴린다."""
     story = load_story()
-    pool = ThreadPoolExecutor(max_workers=4)
-
+    pool = ThreadPoolExecutor(max_workers=6)
     while True:
         time.sleep(0.4)
-
-        # 생성 완료 감지는 데드라인과 무관하게 매 틱 확인해야 한다.
-        # (generate 단계의 데드라인은 600초 상한선일 뿐이므로,
-        #  아래 `left > 0 → continue` 뒤에 두면 영원히 실행되지 않는다.)
-        with eng.lock:
-            if eng.phase == "generate" and eng.candidates and \
-               all(c["status"] == "ready" for c in eng.candidates):
-                if len(eng.candidates) > 1:
-                    # 동시 참여가 있었던 라운드 → 투표
-                    eng.contested = True
-                    eng._set("vote", eng.cfg["voteSeconds"])
-                    print(f"  생성 완료 — 후보 {len(eng.candidates)}개, 투표 {eng.cfg['voteSeconds']}초", flush=True)
-                else:
-                    # 혼자였던 라운드 → 투표 없이 바로 확정
-                    eng.winner = eng.candidates[0]["id"]
-                    eng._set("reveal", eng.cfg.get("revealSeconds", 10))
-                    _commit_winner(eng, story)
-                    print(f"  생성 완료 — 단독 참여, 투표 없이 확정", flush=True)
-                continue
-            phase, left = eng.phase, eng.remaining()
-
-        if left is None:
-            continue      # idle — 첫 제출을 기다리는 중
-        if left > 0:
-            continue
-
-        if phase == "collect":
-            with eng.lock:
-                k = min(eng.cfg["candidates"], len(eng.pool))
-                picked = random.sample(eng.pool, k)   # 선착순보다 공정하게 느껴진다
-                eng.candidates = [{
-                    "id": p["id"], "text": p["text"], "video": None, "still": None,
-                    "status": "generating", "progress": "대기", "votes": 0,
-                } for p in picked]
-                eng._set("generate", 600)   # 상한선; 완료되면 즉시 넘어간다
-                dropped = len(eng.pool) - k
-            print(f"  접수 창 마감 — 참여 {len(eng.pool)}명 → 후보 {k}개"
-                  + (f" ({dropped}건 미채택)" if dropped else "")
-                  + ("  · 투표 예정" if k > 1 else "  · 단독, 투표 없음"), flush=True)
-            for c in eng.candidates:
-                pool.submit(make_candidate_video, eng, c, story)
-
-        elif phase == "generate":
-            # 600초 상한에 걸린 경우 — 미완 후보는 정지화면으로 강등하고 투표로 넘긴다
-            with eng.lock:
-                for c in eng.candidates:
-                    if c["status"] != "ready":
-                        c["status"] = "ready"
-                        c["still"] = story["generation"]["startFrame"]
-                        c["progress"] = "시간 초과 · 정지화면"
-                eng._set("vote", eng.cfg["voteSeconds"])
-            print("  생성 시간 초과 — 투표로 진행", flush=True)
-
-        elif phase == "vote":
-            with eng.lock:
-                best = max(eng.candidates, key=lambda c: c["votes"])
-                eng.winner = best["id"]
-                eng._set("reveal", eng.cfg.get("revealSeconds", 10))
-                _commit_winner(eng, story)
-            print(f"  투표 마감 — 당선: {best['text'][:30]} ({best['votes']}표)", flush=True)
-
-        elif phase == "reveal":
-            with eng.lock:
-                done = len(eng.canon) >= story.get("maxScenes", 6)
-            if done:
-                title = active(eng, story)["title"]
-                with eng.lock:
-                    eng.scenario_id = None
-                    eng.canon = []
-                    eng.candidates = []
-                save_snapshot(eng)
-                print(f"\n■ 〈{title}〉 완결 — 다음 이야기를 기다립니다", flush=True)
-            eng.start_round()
+        for tr in list(eng.tracks.values()):
+            try:
+                advance(eng, tr, story, pool)
+            except Exception as e:
+                print(f"  ! [{tr.sid}] 진행 실패 {type(e).__name__}: {str(e)[:120]}",
+                      flush=True)
 
 
-# ─────────────────────────────────────────────────────────────
-# HTTP
-# ─────────────────────────────────────────────────────────────
 class Handler(BaseHTTPRequestHandler):
     protocol_version = "HTTP/1.1"
 
@@ -815,29 +865,33 @@ class Handler(BaseHTTPRequestHandler):
         if not voter:
             return self._send(400, {"ok": False, "message": "voter 없음"})
 
+        sid = (body.get("scenarioId") or "").strip()
+        tr = ENGINE.track(sid)
+
         if self.path == "/api/submit":
-            ok, res = ENGINE.submit(body.get("text"), voter)
+            if not tr:
+                return self._send(200, {"ok": False, "message": "이야기를 골라주세요"})
+            ok, res = tr.submit(body.get("text"), voter, body.get("nick"))
             if ok and ENGINE.can_generate():
                 # 접수 창이 도는 동안 다음 컷 프레임을 미리 세워둔다.
-                # 마감까지 기다렸다 시작하면 그 시간이 그대로 대기가 된다.
-                with ENGINE.lock:
-                    sub = ENGINE.pool[-1]
-                prestage(ENGINE, sub["id"], sub["text"], load_story())
+                prestage(ENGINE, tr, res["id"], res["text"])
             return self._send(200, {"ok": ok,
-                                    "message": res if not ok else "접수됐습니다",
-                                    "count": res if ok else None,
-                                    "round": ENGINE.round_n})
+                                    "message": "접수됐습니다" if ok else res,
+                                    "count": len(tr.pool) if ok else None,
+                                    "round": tr.round_n})
         if self.path == "/api/reset":
-            ok, msg = ENGINE.reset_story()
-            PRESTAGE.clear()
+            # scenarioId 를 주면 그 이야기만, 없으면 전부 처음으로
+            targets = [tr] if tr else list(ENGINE.tracks.values())
+            for t in targets:
+                t.reset()
             save_snapshot(ENGINE)
-            ENGINE.start_round()
-            return self._send(200, {"ok": ok, "message": msg})
-        if self.path == "/api/pick":
-            ok, msg = ENGINE.pick_scenario(body.get("scenarioId"), load_story())
-            return self._send(200, {"ok": ok, "message": msg})
+            return self._send(200, {"ok": True,
+                                    "message": "처음으로 돌아갑니다",
+                                    "reset": [t.sid for t in targets]})
         if self.path == "/api/vote":
-            ok, msg = ENGINE.vote(body.get("candidateId"), voter)
+            if not tr:
+                return self._send(200, {"ok": False, "message": "이야기를 골라주세요"})
+            ok, msg = tr.vote(body.get("candidateId"), voter)
             return self._send(200, {"ok": ok, "message": msg})
         self._send(404, {"ok": False, "message": "not found"})
 
@@ -871,7 +925,7 @@ def main():
     CHAIN_DIR.mkdir(parents=True, exist_ok=True)
 
     global ENGINE
-    ENGINE = Engine(cfg, args.live, args.max, args.budget)
+    ENGINE = Engine(story, cfg, args.live, args.max, args.budget)
     if args.fresh:
         storage.clear_state()
     else:
@@ -887,9 +941,9 @@ def main():
             if args.live else "DRY-RUN (무료)")
     print("─" * 60)
     print(f"  슥 · 한 줄 극장 — {mode}")
-    print(f"  시나리오: " + " · ".join(sc["title"] for sc in story["scenarios"]))
     print(f"  라운드: 첫 문장 → 동시 접수 {cfg['collectSeconds']}s → 생성 → "
           f"[2명 이상이면 투표 {cfg['voteSeconds']}s] → 발표")
+    print(f"  세 이야기가 각각 독립적으로 돕니다")
     print(f"  폰 입력  http://localhost:{args.port}/write")
     print(f"  상영     http://localhost:{args.port}/stage")
     print("─" * 60, flush=True)

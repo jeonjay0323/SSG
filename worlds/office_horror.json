@@ -4,17 +4,11 @@
   "toneRef": "드라마 〈미생〉",
   "medium": "live_action",
   "refsDir": "scenes/worlds/office_horror/refs",
-
   "character": "A Korean woman in her late twenties — a slim oval face, defined but soft jawline, calm dark eyes with a single-fold lid, straight nose, understated lips. Black hair pulled back into a low ponytail with a few strands loose. Bare face, no makeup, no contouring. She looks capable and tired at the same time, an ordinary office worker deep into overtime.",
-
   "wardrobe": "A plain white or pale grey blouse with the sleeves pushed up, a dark cardigan hanging off the chair or shoulders, dark charcoal slacks, a company lanyard ID. Everything slightly creased from a long day — ordinary, not styled.",
-
   "grade": "Desaturated cool grey-blue. Flat overhead fluorescent light, faintly green, ordinary and unflattering. Low contrast, milky blacks that never crush. Fine 35mm grain.",
-
   "director": "DIRECTION — shoot this in the visual language of the Korean drama Misaeng, but as a quiet ghost story. Observational, unglamorous, documentary-adjacent. The camera is a witness that happens to be in the room, not a storyteller showing off. The horror is in what the frame does not explain.\n\nTHE FOURTH WALL IS NEVER BROKEN:\nShe does not know she is being filmed. She never looks into the lens, never acknowledges the camera, never poses. Her eyes are always occupied by something inside the scene. If her face is toward camera, her gaze is still angled off-frame. A straight-to-lens portrait look is a failure.\n\nFRAME THROUGH SOMETHING — this is the signature of the style:\nShoot past or through whatever is in the room: a monitor edge, a glass partition, blinds, a pillar, a doorway, a gap between cubicles. Let foreground objects sit in front of her, out of focus, cutting into the frame. She is often partially hidden, seen between things, or reflected in a dark screen. A clean unobstructed view of her is the exception.\n\nBLOCKING:\nNever centre her. Push her off to one side, low in the frame, or small against the architecture. Give the empty office more room than the person — the space presses in on her. Backs of heads, shoulders and profiles are normal. Leave large areas of the frame dark and unexplained.\n\nLENS:\nLonger focal length with compressed perspective, shallow depth of field. A quiet handheld feel — the frame sits slightly imperfectly, as if held by a person. No crane moves, no sweeping camera, no dramatic angles for their own sake.\n\nLIGHT AND COLOUR — Misaeng palette, NOT horror-movie lighting:\nFlat overhead fluorescent light, faintly green, ordinary and unflattering. Most of the floor is dark because the lights are simply off, not because someone lit it dramatically. Desaturated cool grey-blue, low contrast, milky blacks. NO teal-and-orange grade, no coloured gels, no rim light, no lens flare, no fog machine.\n\nPERFORMANCE:\nInterior and suppressed — Korean workplace realism, where people hold everything in. Stillness, a held breath, eyes moving before the body does. Fear reads as going quiet and very still, never as screaming or theatrical recoiling.\n\nFORBIDDEN: eye contact with camera, posed portrait framing, centred symmetrical hero shots, jump-scare framing, gore, coloured horror gels, teal-and-orange grade, rim light, lens flare, glamour lighting, plastic retouched skin, text, subtitles, captions, watermarks, logos, UI overlays.",
-
-  "negative": "looking at the camera, looking into the lens, direct eye contact, staring into camera, posing for the camera, portrait pose, headshot, breaking the fourth wall, gore, blood, screaming face, jump scare, coloured horror lighting, teal and orange grade, warm golden light, rim light, lens flare, glamour lighting, plastic retouched skin, anime, illustration, cartoon, text, subtitles, captions, watermark, logo, UI overlay, deformed face, extra limbs, warping, morphing",
-
+  "negative": "korean text, hangul, japanese text, chinese characters, letters, words, handwriting, signage, banner, poster text, readable screen, title card, opening credits, looking at the camera, looking into the lens, direct eye contact, staring into camera, posing for the camera, portrait pose, headshot, breaking the fourth wall, gore, blood, screaming face, jump scare, coloured horror lighting, teal and orange grade, warm golden light, rim light, lens flare, glamour lighting, plastic retouched skin, anime, illustration, cartoon, text, subtitles, captions, watermark, logo, UI overlay, deformed face, extra limbs, warping, morphing",
   "shots": [
     {
       "key": "obstructed_wide",
@@ -47,7 +41,6 @@
       "desc": "A waist-level shot from just behind her in a corridor, the frame breathing slightly as if handheld. Her back and one side of her face are visible. The corridor ahead of her recedes into darkness."
     }
   ],
-
   "hold": {
     "key": "hold",
     "label": "연속 · 동일 구도",

@@ -7,199 +7,152 @@
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard.css" />
 <link rel="preload" as="font" type="font/woff2" crossorigin href="https://fastly.jsdelivr.net/gh/projectnoonnu/2408-3@1.0/Paperlogy-7Bold.woff2" />
 <style>
-  /* ── SSG-Demo 디자인 시스템 ─────────────────────────────
-     영상 영역만 검정 — 레터박스는 어느 테마든 검정이어야 한다. */
+  /* ── SSG 디자인 시스템 · 다크 ─────────────────────────── */
   @font-face{font-family:'Paperlogy';font-weight:400;src:url('https://fastly.jsdelivr.net/gh/projectnoonnu/2408-3@1.0/Paperlogy-4Regular.woff2') format('woff2');font-display:swap;}
   @font-face{font-family:'Paperlogy';font-weight:500;src:url('https://fastly.jsdelivr.net/gh/projectnoonnu/2408-3@1.0/Paperlogy-5Medium.woff2') format('woff2');font-display:swap;}
   @font-face{font-family:'Paperlogy';font-weight:700;src:url('https://fastly.jsdelivr.net/gh/projectnoonnu/2408-3@1.0/Paperlogy-7Bold.woff2') format('woff2');font-display:swap;}
 
   :root{
-    /* SSG-Demo 토큰의 다크 변형 */
-    --surface:#121214; --surface-container:#1a1a1c; --white:#1a1a1c;
+    --surface:#121214; --surface-container:#1a1a1c;
     --chacole:#f2f2f4; --on-surface:#f2f2f4;
-    --dust:#8e8e93; --outline-light:#2e2e33; --outline-dark:#525252;
-    --primary:#a100ff; --violet:#a100ff; --violet-text:#c07bff;
-    --accent:#00a43e; --black:#000;
+    --dust:#8e8e93; --outline-light:#2e2e33;
+    --violet:#a100ff; --violet-text:#c07bff; --accent:#00a43e; --black:#000;
     --brand:'Paperlogy','Pretendard',sans-serif;
   }
   *{box-sizing:border-box;margin:0;padding:0}
   html,body{height:100%;overflow:hidden}
   body{
     background:var(--surface);color:var(--chacole);
-    font-family:'Pretendard',-apple-system,sans-serif;font-size:14px;line-height:1.7;
-    display:grid;grid-template-columns:1fr 330px;grid-template-rows:1fr 56px;
-    grid-template-areas:"main list" "foot foot";
+    font-family:'Pretendard',-apple-system,sans-serif;font-size:14px;line-height:1.6;
+    display:flex;flex-direction:column;
   }
-  #main{grid-area:main;position:relative;background:var(--black);overflow:hidden}
 
-  /* ── 단계 배지 ── */
-  #phase{
-    position:absolute;top:24px;left:28px;z-index:5;display:flex;align-items:center;gap:6px;
-    padding:4px 8px;border-radius:4px;background:rgba(18,18,20,.9);
-    font-family:var(--brand);font-size:12px;color:var(--on-surface);
+  /* ── 상단 ── */
+  header{
+    flex:none;display:flex;align-items:center;justify-content:space-between;
+    padding:14px 24px;border-bottom:1px solid var(--outline-light);
   }
-  #phase .dot{width:6px;height:6px;border-radius:50%;background:var(--violet);
-              animation:blink 1.5s ease-in-out infinite}
-  #phase b{color:var(--violet-text);font-variant-numeric:tabular-nums;font-weight:500}
-  @keyframes blink{0%,100%{opacity:1}50%{opacity:.25}}
+  header .logo{font-family:var(--brand);font-weight:700;font-size:22px}
+  header .inv{font-family:var(--brand);font-size:14px;color:var(--dust)}
+  header .url{
+    font-family:ui-monospace,monospace;font-size:13px;color:var(--violet-text);
+    border:1px solid var(--outline-light);border-radius:4px;padding:5px 12px;
+  }
 
-  /* ── 재생 뷰 ── */
-  .view{position:absolute;inset:0;opacity:0;pointer-events:none;transition:opacity .4s}
-  .view.on{opacity:1;pointer-events:auto}
-  #playImg{width:100%;height:100%;object-fit:contain;display:none;background:var(--black)}
-  .layer{
-    position:absolute;inset:0;width:100%;height:100%;object-fit:contain;background:var(--black);
-    opacity:0;transition:opacity var(--xfade,420ms) ease;
-  }
-  .layer.on{opacity:1}
-  #skel{
-    position:absolute;inset:0;display:none;align-items:center;justify-content:center;
-    flex-direction:column;gap:20px;background:var(--surface-container);
-  }
-  #skel .box{
-    width:46%;aspect-ratio:16/9;border:1px dashed var(--outline-light);border-radius:4px;
-    display:flex;align-items:center;justify-content:center;color:var(--dust);
-    font-family:var(--brand);font-size:14px;
-  }
-  #skel .lb{font-family:var(--brand);font-size:18px;color:var(--dust)}
+  /* ── 3분할 ── */
+  #grid{flex:1;min-height:0;display:grid;grid-template-columns:repeat(3,1fr);gap:1px;
+        background:var(--outline-light)}
+  .col{background:var(--black);position:relative;display:flex;flex-direction:column;
+       overflow:hidden}
 
-  #cap{
-    position:absolute;left:0;right:0;bottom:0;padding:120px 8% 52px;text-align:center;
-    background:linear-gradient(to top,rgba(0,0,0,.85) 32%,transparent);
+  /* 세로 영상 무대 */
+  .stagebox{flex:1;min-height:0;position:relative;background:var(--black)}
+  .stagebox video,.stagebox img{
+    position:absolute;inset:0;width:100%;height:100%;object-fit:contain;
+    opacity:0;transition:opacity .45s ease;
   }
-  #capText{font-family:var(--brand);font-weight:700;font-size:30px;color:#fff;
-           line-height:1.45;text-shadow:0 2px 24px rgba(0,0,0,.9);min-height:44px}
+  .stagebox video.on,.stagebox img.on{opacity:1}
 
-  /* 접수 중 들어온 문장 — 보낸 사람이 큰 화면에서 확인할 수 있게 */
-  #inbox{
-    position:absolute;left:0;right:0;bottom:0;padding:26px 40px 22px;
-    background:linear-gradient(to top,rgba(10,10,12,.92) 55%,transparent);
-    opacity:0;transition:opacity .35s;pointer-events:none;
+  /* 트랙 머리말 */
+  .head{
+    position:absolute;top:0;left:0;right:0;z-index:3;padding:14px 16px 26px;
+    background:linear-gradient(to bottom,rgba(0,0,0,.78),transparent);
+    display:flex;align-items:center;justify-content:space-between;gap:8px;
   }
-  #inbox.on{opacity:1}
-  #inbox .ttl{font-family:var(--brand);font-size:13px;color:var(--violet-text);
-              margin-bottom:10px}
-  #inboxList{display:flex;flex-direction:column;gap:7px}
-  #inboxList .m{
-    align-self:flex-start;max-width:78%;padding:9px 14px;border-radius:4px;
-    background:rgba(26,26,28,.94);border:1px solid var(--outline-light);
-    color:var(--chacole);font-size:17px;line-height:1.5;
-    animation:slideIn .4s ease both;
+  .head .t{font-family:var(--brand);font-weight:700;font-size:17px;color:#fff}
+  .col.fin{outline:2px solid var(--violet);outline-offset:-2px}
+  .fin-badge{
+    position:absolute;top:44px;left:50%;transform:translateX(-50%);z-index:6;
+    font-family:var(--brand);font-weight:700;font-size:13px;color:#fff;
+    background:var(--violet);border-radius:4px;padding:4px 12px;display:none;
   }
-  #inboxList .m.fresh{border-color:var(--violet);color:#fff}
-  @keyframes slideIn{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:none}}
-
-  /* ── 투표 뷰 ── */
-  #vote{display:flex;flex-direction:column;padding:78px 40px 34px;gap:20px;background:var(--surface)}
-  #vote h1{font-family:var(--brand);font-weight:700;font-size:28px;
-           color:var(--on-surface);text-align:center}
-  #vote .grid{flex:1;display:grid;gap:16px;min-height:0}
-  .vc{
-    display:flex;flex-direction:column;border:1px solid var(--outline-light);border-radius:4px;
-    overflow:hidden;background:var(--surface-container);transition:border-color .4s,transform .4s;
+  .fin-badge.on{display:block}
+  .head .ph{
+    font-family:var(--brand);font-size:11px;color:var(--violet-text);
+    background:rgba(18,18,20,.8);border-radius:4px;padding:3px 8px;white-space:nowrap;
   }
-  .vc.lead{border-color:var(--violet);box-shadow:0 0 0 1px var(--violet);transform:translateY(-5px)}
-  .vc .m{flex:1;min-height:0;background:var(--black);position:relative}
-  .vc .m video,.vc .m img{width:100%;height:100%;object-fit:cover;display:block}
-  .vc .m .ph{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
-             color:var(--dust);font-size:13px}
-  .vc .b{padding:14px 15px 16px}
-  .vc .tx{font-size:15px;line-height:1.6;min-height:48px;color:var(--chacole)}
-  .vc .bar{margin-top:11px;height:6px;border-radius:4px;background:var(--outline-light);overflow:hidden}
-  .vc .bar i{display:block;height:100%;background:var(--violet);width:0;transition:width .6s ease}
-  .vc .nv{margin-top:7px;display:flex;justify-content:space-between;
-          font-family:var(--brand);font-size:12px;color:var(--dust)}
-  .vc .nv b{color:var(--violet-text);font-size:16px;font-variant-numeric:tabular-nums}
 
-  /* ── 대기 / 생성 뷰 ── */
-  .center{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;
-          background:var(--surface);padding:24px;overflow:hidden}
-  .center .big{font-family:var(--brand);font-weight:700;
-               font-size:clamp(40px,5vw,72px);color:var(--on-surface)}
-  .center .h{font-family:var(--brand);font-weight:700;
-             font-size:clamp(20px,2.2vw,28px);color:var(--on-surface);text-align:center}
-  .center .s{font-family:var(--brand);font-size:14px;color:var(--dust);
-             line-height:1.8;text-align:center}
-  .url{
-    margin-top:4px;padding:10px 20px;border:1px solid var(--outline-light);border-radius:4px;
-    background:var(--surface-container);font-family:ui-monospace,monospace;
-    font-size:clamp(11px,1.1vw,14px);color:var(--violet-text);
-    max-width:100%;overflow-wrap:anywhere;text-align:center;
+  /* 자막 */
+  .cap{
+    position:absolute;left:0;right:0;bottom:0;z-index:3;padding:70px 16px 16px;
+    background:linear-gradient(to top,rgba(0,0,0,.9) 40%,transparent);
+    font-family:var(--brand);font-weight:700;font-size:19px;line-height:1.45;
+    text-align:center;color:#fff;text-shadow:0 2px 16px rgba(0,0,0,.9);
   }
-  /* 부스 대형 화면 기준이지만 창이 좁아도 넘치지 않게 */
-  /* 부스는 와이드 화면 — 항상 가로 3열을 유지하고 폭에 맞춰 줄어들게 한다 */
-  .posters{display:flex;gap:16px;margin-top:22px;width:100%;
-           padding:0 32px;justify-content:center;flex-wrap:nowrap}
-  .posters .p{flex:1 1 0;min-width:0;max-width:320px;
-              border:1px solid var(--outline-light);border-radius:4px;
-              overflow:hidden;background:var(--surface-container)}
-  .posters .p .t{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-  .posters .p img{width:100%;aspect-ratio:16/9;object-fit:cover;display:block}
-  .posters .p .t{padding:10px 12px;font-family:var(--brand);font-weight:700;
-                 font-size:14px;color:var(--on-surface)}
 
-  /* 생성 중 — 리스테이징된 첫 프레임을 크게 보여준다 */
-  #vGen{display:flex;flex-direction:column;background:var(--black)}
-  #genStage{flex:1;min-height:0;display:flex;gap:10px;padding:26px 26px 0;
-            align-items:center;justify-content:center}
-  #genStage .f{flex:1 1 0;min-width:0;height:100%;position:relative;
-               border-radius:4px;overflow:hidden;background:#0c0c0e}
-  #genStage .f img{width:100%;height:100%;object-fit:contain;
-                   animation:kenburns 12s ease-out both}
-  #genStage .f .cap{position:absolute;left:0;right:0;bottom:0;padding:34px 14px 12px;
-                    background:linear-gradient(to top,rgba(0,0,0,.9),transparent);
-                    font-size:15px;line-height:1.5;color:#fff}
-  #genStage .f .wait{position:absolute;inset:0;display:flex;align-items:center;
-                     justify-content:center;color:var(--dust);font-family:var(--brand);
-                     font-size:13px}
-  @keyframes kenburns{from{transform:scale(1)}to{transform:scale(1.06)}}
-  .genfoot{padding:18px 26px 22px;background:var(--surface);display:flex;
-           flex-direction:column;align-items:center;gap:12px}
-  .genfoot .h{font-family:var(--brand);font-weight:700;font-size:20px;color:var(--on-surface)}
-
-  .gens{display:flex;flex-direction:column;gap:10px;margin-top:0;width:min(620px,72%)}
-  .gen{
-    display:flex;align-items:center;gap:12px;padding:12px 15px;
-    border:1px solid var(--outline-light);border-radius:4px;background:var(--surface-container);font-size:14px;
+  .cap .by{
+    display:block;font-size:12px;font-weight:700;color:var(--violet-text);
+    margin-bottom:5px;letter-spacing:.04em;
   }
-  .gen .sp{width:14px;height:14px;flex:none;border:2px solid var(--outline-light);
-           border-top-color:var(--violet);border-radius:50%;animation:spin .9s linear infinite}
-  .gen .ok{width:14px;height:14px;flex:none;border-radius:50%;background:var(--accent)}
-  .gen .t{flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
-  .gen .p{font-family:var(--brand);font-size:12px;color:var(--dust);flex:none}
-  @keyframes spin{to{transform:rotate(360deg)}}
 
-  /* ── 우측 목록 ── */
-  #list{grid-area:list;background:var(--surface-container);border-left:1px solid var(--outline-light);
-        display:flex;flex-direction:column;overflow:hidden}
-  .lh{padding:18px 16px 12px;border-bottom:1px solid var(--outline-light);
-      display:flex;justify-content:space-between;align-items:baseline}
-  .lh .t{font-family:var(--brand);font-size:12px;color:var(--dust)}
-  .lh .c{font-family:var(--brand);font-size:12px;color:var(--violet-text)}
-  #scenes{flex:1;overflow-y:auto;padding:12px}
-  #scenes::-webkit-scrollbar{width:5px}
-  #scenes::-webkit-scrollbar-thumb{background:var(--outline-light);border-radius:4px}
-  .sc{border:1px solid var(--outline-light);border-radius:4px;overflow:hidden;
-      background:var(--surface-container);margin-bottom:12px;transition:border-color .3s}
-  .sc.playing{border-color:var(--violet);box-shadow:0 0 0 1px var(--violet)}
-  .sc .th{position:relative;width:100%;aspect-ratio:16/9;background:var(--black);
-          display:flex;align-items:center;justify-content:center}
-  .sc .th img,.sc .th video{width:100%;height:100%;object-fit:cover;display:block}
-  .sc .th.sk{background:var(--surface-container);color:var(--dust);
-             font-family:var(--brand);font-size:12px}
-  .sc .n{position:absolute;top:6px;left:6px;padding:2px 6px;border-radius:4px;
-         background:rgba(18,18,20,.85);color:var(--on-surface);font-family:var(--brand);font-size:11px}
-  .sc .n.fx{background:rgba(18,18,20,.7);color:var(--dust)}
-  .sc .bd{padding:9px 11px 11px}
-  .sc .cp{font-size:13px;line-height:1.6;color:var(--chacole)}
-  .sc .mt{margin-top:5px;font-family:var(--brand);font-size:11px;color:var(--dust)}
+  /* 접수 중 — 들어온 문장이 쌓인다 */
+  .inbox{
+    position:absolute;left:0;right:0;bottom:0;z-index:4;padding:60px 14px 14px;
+    background:linear-gradient(to top,rgba(10,10,12,.94) 55%,transparent);
+    display:none;flex-direction:column;gap:6px;
+  }
+  .inbox.on{display:flex}
+  .inbox .ttl{font-family:var(--brand);font-size:12px;color:var(--violet-text)}
+  .inbox .m{
+    padding:7px 11px;border-radius:4px;background:rgba(26,26,28,.95);
+    border:1px solid var(--outline-light);font-size:14px;line-height:1.45;
+    animation:slideIn .35s ease both;
+  }
+  .inbox .m.fresh{border-color:var(--violet);color:#fff}
+  .inbox .m .who{
+    display:inline-block;margin-right:7px;font-family:var(--brand);font-weight:700;
+    font-size:11px;color:var(--violet-text);
+  }
+  @keyframes slideIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
 
-  #foot{grid-area:foot;border-top:1px solid var(--outline-light);background:var(--surface-container);
-        display:flex;align-items:center;justify-content:space-between;
-        padding:0 24px;font-family:var(--brand);font-size:13px;color:var(--dust)}
-  #foot b{color:var(--violet-text);font-size:18px;font-weight:700;margin-right:4px}
-  .sp2{font-family:ui-monospace,monospace;font-size:11px;color:var(--dust)}
-  .frow{display:flex;align-items:center;gap:12px}
+  /* 생성 중 — 후보 첫 프레임 */
+  .gen{position:absolute;inset:0;z-index:5;display:none;background:var(--black)}
+  .gen.on{display:flex;flex-direction:column}
+  .gen .cands{flex:1;min-height:0;display:flex;gap:2px}
+  .gen .c{flex:1 1 0;min-width:0;position:relative;background:#0c0c0e}
+  .gen .c img{width:100%;height:100%;object-fit:cover;
+              animation:kenburns 12s ease-out both}
+  .gen .c .w{position:absolute;inset:0;display:flex;align-items:center;
+             justify-content:center;color:var(--dust);font-family:var(--brand);font-size:11px}
+  .gen .c .tx b,.vote .c .tx b{color:var(--violet-text);font-weight:700}
+  .gen .c .tx{position:absolute;left:0;right:0;bottom:0;padding:26px 8px 8px;
+              background:linear-gradient(to top,rgba(0,0,0,.92),transparent);
+              font-size:12px;line-height:1.4;color:#fff}
+  @keyframes kenburns{from{transform:scale(1)}to{transform:scale(1.07)}}
+  .gen .lab{flex:none;padding:10px;text-align:center;font-family:var(--brand);
+            font-size:12px;color:var(--dust);background:var(--surface)}
+
+  /* 투표 중 */
+  .vote{position:absolute;inset:0;z-index:6;display:none;background:var(--black)}
+  .vote.on{display:flex;flex-direction:column}
+  .vote .cands{flex:1;min-height:0;display:flex;gap:2px}
+  .vote .c{flex:1 1 0;min-width:0;position:relative;background:#0c0c0e;
+           border-top:3px solid transparent}
+  .vote .c.lead{border-top-color:var(--violet)}
+  .vote .c video,.vote .c img{width:100%;height:100%;object-fit:cover}
+  .vote .c .tx{position:absolute;left:0;right:0;bottom:0;padding:30px 8px 8px;
+               background:linear-gradient(to top,rgba(0,0,0,.94),transparent);
+               font-size:12px;line-height:1.4;color:#fff}
+  .vote .c .n{position:absolute;top:6px;right:8px;font-family:var(--brand);
+              font-weight:700;font-size:18px;color:var(--violet-text)}
+  .vote .lab{flex:none;padding:10px;text-align:center;font-family:var(--brand);
+             font-weight:700;font-size:14px;color:var(--on-surface);background:var(--surface)}
+
+  /* 대기 */
+  .idle{position:absolute;inset:0;z-index:2;display:none;flex-direction:column;
+        align-items:center;justify-content:center;gap:10px;padding:20px;
+        background:rgba(0,0,0,.55)}
+  .idle.on{display:flex}
+  .idle .h{font-family:var(--brand);font-weight:700;font-size:17px;text-align:center}
+  .idle .s{font-family:var(--brand);font-size:12px;color:var(--dust);text-align:center}
+
+  /* ── 하단 ── */
+  footer{
+    flex:none;display:flex;align-items:center;justify-content:space-between;
+    padding:10px 24px;border-top:1px solid var(--outline-light);
+    font-family:var(--brand);font-size:12px;color:var(--dust);
+  }
+  footer b{color:var(--violet-text);font-size:16px;font-weight:700;margin-right:4px}
   .btn-ghost{
     padding:4px 10px;border-radius:4px;border:1px solid var(--outline-light);
     background:none;color:var(--dust);font-family:var(--brand);font-size:12px;
@@ -207,76 +160,35 @@
   }
   .btn-ghost:hover{opacity:.7}
   .btn-ghost.arm{border-color:var(--violet);color:var(--violet-text)}
-  .hide{display:none !important}
 </style>
 </head>
 <body>
 
-<section id="main">
-  <div id="phase"><span class="dot"></span><span id="phaseText"></span></div>
+<header>
+  <div class="logo">슥</div>
+  <div class="inv" id="invite"></div>
+  <div class="url" id="url"></div>
+</header>
 
-  <!-- 재생 -->
-  <div class="view" id="vPlay">
-    <video id="playA" class="layer" muted playsinline></video>
-    <video id="playB" class="layer" muted playsinline></video>
-    <img id="playImg" alt="">
-    <div id="skel">
-      <div class="lb" id="skelLabel"></div>
-      <div class="box">아직 만들어지지 않은 장면</div>
-    </div>
-    <div id="cap"><div id="capText"></div></div>
-  <div id="inbox"><div class="ttl" id="inboxTtl"></div><div id="inboxList"></div></div>
-  </div>
+<div id="grid"></div>
 
-  <!-- 대기 -->
-  <div class="view center" id="vIdle">
-    <div class="big">슥</div>
-    <div class="h" id="idleHead">다음 이야기를 보내주세요</div>
-    <div class="s" id="idleSub">폰으로 아래 주소에 접속해<br>한 문장을 보내면 장면이 만들어집니다</div>
-    <div class="url" id="idleUrl">/write</div>
-    <div class="posters" id="posters"></div>
-  </div>
-
-  <!-- 생성 -->
-  <div class="view" id="vGen">
-    <div id="genStage"></div>
-    <div class="genfoot">
-      <div class="h">첫 프레임이 나왔습니다 — 움직이기 시작합니다</div>
-      <div class="gens" id="genList"></div>
-    </div>
-  </div>
-
-  <!-- 투표 -->
-  <div class="view" id="vVote">
-    <h1>어느 장면으로 이어갈까요</h1>
-    <div class="grid" id="voteGrid"></div>
-  </div>
-</section>
-
-<aside id="list">
-  <div class="lh"><span class="t">지금까지의 장면</span><span class="c" id="cnt"></span></div>
-  <div id="scenes"></div>
-</aside>
-
-<footer id="foot">
-  <div><b id="total">0</b>번째 장면까지 이어졌습니다</div>
-  <div class="frow">
-    <button class="btn-ghost hide" id="backBtn">처음으로</button>
-    <div class="sp2" id="spend"></div>
+<footer>
+  <div><b id="total">0</b>개의 장면이 만들어졌습니다</div>
+  <div style="display:flex;align-items:center;gap:12px">
+    <span id="spend"></span>
+    <button class="btn-ghost" id="backBtn">전부 처음으로</button>
   </div>
 </footer>
 
 <script>
 /* ════════════════════════════════════════════
-   상영 화면 — 라운드 대응
+   상영 화면 — 3분할
 
-   idle/collect → 재생 루프 (또는 안내)
-   generate     → 후보별 생성 진행
-   vote         → 후보 나란히 + 실시간 득표      ← 부스의 하이라이트
-   reveal       → 당선작
+   세 이야기가 각각 독립적으로 돌아간다. 한 칸이 한 이야기다.
+   영상은 9:16 세로라 세 칸을 나란히 놓으면 16:9 화면을 거의 채운다.
 
-   씬 1·2 는 아직 스켈레톤. story.json 에 image/video 가 채워지면
-   자동으로 실제 콘텐츠로 바뀐다.
+   칸마다 상태에 따라 겹쳐진 층이 켜진다:
+     재생(기본) · 접수 오버레이 · 생성(후보 첫 프레임) · 투표
    ════════════════════════════════════════════ */
 
 const POLL = 900;
@@ -285,248 +197,189 @@ const esc = s => String(s).replace(/[&<>"']/g,
   c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 
 let story = null, storyAt = 0;
-let playIdx = 0, playUntil = 0;   // 재생 루프 커서
-let lastPhase = null;
+const cols = {};        // sid -> { el, played:Set, idx, until, front }
 
-function view(id){
-  ['vPlay','vIdle','vGen','vVote'].forEach(v =>
-    $('#'+v).classList.toggle('on', v === id));
+function buildGrid(tracks){
+  $('#grid').innerHTML = tracks.map(t => `
+    <div class="col" data-sid="${t.id}">
+      <div class="stagebox">
+        <video class="la" muted playsinline></video>
+        <video class="lb" muted playsinline></video>
+        <img class="im" alt="">
+        <div class="head"><div class="t">${esc(t.title)}</div>
+          <div class="ph"></div></div>
+        <div class="cap"></div>
+        <div class="fin-badge">이야기 완결 · 곧 새 이야기가 시작됩니다</div>
+        <div class="idle">
+          <div class="h">${esc(t.lead || '')}</div>
+          <div class="s">폰에서 이 이야기를 골라<br>다음 문장을 보내주세요</div>
+        </div>
+        <div class="inbox"><div class="ttl"></div><div class="list"></div></div>
+        <div class="gen"><div class="cands"></div>
+          <div class="lab">첫 프레임이 나왔습니다 — 곧 움직입니다</div></div>
+        <div class="vote"><div class="cands"></div>
+          <div class="lab">어느 장면으로 이어갈까요</div></div>
+      </div>
+    </div>`).join('');
+  tracks.forEach(t => {
+    const el = $(`.col[data-sid="${t.id}"]`);
+    cols[t.id] = { el, played:new Set(), idx:-1, until:0, front:'a' };
+  });
 }
 
-/* 고정 씬 + canon 을 하나의 번호 체계로 */
-function allScenes(st){
-  const sc = (story?.scenarios || []).find(x => x.id === st.scenarioId);
-  const fixed = ((sc?.scenes) || []).map(s => ({
-    key:'f'+s.n, n:s.n, fixed:true, skeleton:!!s.skeleton,
-    label:s.label, caption:s.caption, image:s.image, video:s.video,
-    hold:(s.holdSeconds||5)*1000,
+/* 도입부 + canon 을 한 줄로 */
+function scenesOf(t){
+  const sc = (story?.scenarios || []).find(x => x.id === t.id);
+  const intro = ((sc?.scenes) || []).map(s => ({
+    key:'f'+s.n, caption:s.caption, image:s.image, video:s.video,
+    hold:(s.holdSeconds||8)*1000,
   }));
-  return fixed.concat((st.canon || []).map(c => ({
-    key:'c'+c.n, n:c.n, fixed:false, skeleton:!c.video && !c.still,
-    label: c.contested ? `관람객 · ${c.votes}표` : '관람객',
-    caption:c.text, image:c.still, video:c.video, hold:6000,
+  return intro.concat((t.canon||[]).map(c => ({
+    key:'c'+c.n, caption:c.text, nick:c.nick || '',
+    image:c.still, video:c.video, hold:6000,
   })));
 }
 
-/* ── 재생 루프 ── */
-let frontLayer = 'A';   // 지금 보이고 있는 레이어
-
-function playScene(s){
-  const im = $('#playImg'), sk = $('#skel');
-  $('#capText').textContent = s.caption || '';
-
-  if(s.video){
-    // 뒤 레이어에 다음 영상을 올려 첫 프레임까지 준비한 뒤 교차한다.
-    // 준비 전에 바꾸면 검은 화면이 한 번 스치므로 반드시 기다린다.
-    const next = frontLayer === 'A' ? $('#playB') : $('#playA');
-    const cur  = frontLayer === 'A' ? $('#playA') : $('#playB');
-    im.style.display = 'none'; sk.style.display = 'none';
-
-    const swap = () => {
-      next.classList.add('on');
-      cur.classList.remove('on');
-      frontLayer = frontLayer === 'A' ? 'B' : 'A';
-      next.play().catch(()=>{});
-      // 교차가 끝난 뒤 정리 — 재생 중인 걸 즉시 멈추면 페이드 도중 끊긴다
-      setTimeout(() => { try { cur.pause(); } catch(e){} }, 500);
-    };
-
-    next.src = s.video;
-    next.load();
+function play(sid, scene){
+  const c = cols[sid], box = c.el.querySelector('.stagebox');
+  const im = box.querySelector('.im');
+  const cap = box.querySelector('.cap');
+  cap.innerHTML = (scene.nick ? `<span class="by">${esc(scene.nick)}</span>` : '')
+                + esc(scene.caption || '');
+  if(scene.video){
+    const next = box.querySelector(c.front === 'a' ? '.lb' : '.la');
+    const cur  = box.querySelector(c.front === 'a' ? '.la' : '.lb');
+    im.classList.remove('on');
+    next.src = scene.video; next.load();
     let done = false;
-    const go = () => { if(!done){ done = true; swap(); } };
-    next.addEventListener('loadeddata', go, {once:true});
-    setTimeout(go, 1500);            // 로딩이 늦어도 화면은 넘어간다
-  } else if(s.image){
-    $('#playA').classList.remove('on'); $('#playB').classList.remove('on');
-    sk.style.display = 'none';
-    im.src = s.image; im.style.display = 'block';
-  } else {
-    $('#playA').classList.remove('on'); $('#playB').classList.remove('on');
-    im.style.display = 'none';
-    $('#skelLabel').textContent = `씬 ${s.n} · ${s.label}`;
-    sk.style.display = 'flex';
+    const swap = () => {
+      if(done) return; done = true;
+      next.classList.add('on'); cur.classList.remove('on');
+      c.front = c.front === 'a' ? 'b' : 'a';
+      next.play().catch(()=>{});
+      setTimeout(() => { try{ cur.pause(); }catch(e){} }, 600);
+    };
+    next.addEventListener('loadeddata', swap, {once:true});
+    setTimeout(swap, 1500);
+  } else if(scene.image){
+    box.querySelectorAll('video').forEach(v => v.classList.remove('on'));
+    im.src = scene.image; im.classList.add('on');
   }
-  playUntil = performance.now() + s.hold;
+  c.until = performance.now() + scene.hold;
 }
 
-function renderList(scenes, key){
-  $('#scenes').innerHTML = scenes.map(s => `
-    <div class="sc ${s.key===key?'playing':''}">
-      <div class="th ${s.skeleton?'sk':''}">
-        ${s.video ? `<video src="${s.video}" muted playsinline preload="metadata"></video>`
-          : s.image ? `<img src="${s.image}">`
-          : '스켈레톤'}
-        <div class="n ${s.fixed?'fx':''}">씬 ${s.n}</div>
-      </div>
-      <div class="bd">
-        <div class="cp">${esc(s.caption||'')}</div>
-        <div class="mt">${s.fixed?'사전 제작 · ':''}${esc(s.label)}</div>
-      </div>
-    </div>`).join('');
-  const a = $('#scenes').querySelector('.playing');
-  if(a) a.scrollIntoView({block:'nearest'});
-  $('#cnt').textContent = scenes.length + '개';
-  $('#total').textContent = scenes.filter(s => !s.skeleton).length;
+function renderTrack(t){
+  const c = cols[t.id];
+  if(!c) return;
+  const box = c.el.querySelector('.stagebox');
+  const ph = {idle:'대기', collect:'접수', generate:'생성', vote:'투표',
+              reveal:'발표', finale:'완결'}[t.phase] || t.phase;
+  const clock = (t.remaining === null || t.phase === 'generate') ? '' : ` ${t.remaining}s`;
+  box.querySelector('.head .ph').textContent = `${t.round}R · ${ph}${clock}`;
+
+  const fin = t.phase === 'finale';
+  c.el.classList.toggle('fin', fin);
+  box.querySelector('.fin-badge').classList.toggle('on', fin);
+
+  const genOn  = t.phase === 'generate';
+  const voteOn = t.phase === 'vote';
+  box.querySelector('.gen').classList.toggle('on', genOn);
+  box.querySelector('.vote').classList.toggle('on', voteOn);
+
+  if(genOn){
+    const el = box.querySelector('.gen .cands');
+    const sig = t.candidates.map(x => x.still || '').join('|');
+    if(el.dataset.sig !== sig){
+      el.dataset.sig = sig;
+      el.innerHTML = t.candidates.map(x => `
+        <div class="c">${x.still ? `<img src="${x.still}">`
+                                 : '<div class="w">첫 프레임 준비 중</div>'}
+          <div class="tx">${x.nick ? `<b>${esc(x.nick)}</b> ` : ''}${esc(x.text)}</div></div>`).join('');
+    }
+  }
+  if(voteOn){
+    const el = box.querySelector('.vote .cands');
+    const max = Math.max(1, ...t.candidates.map(x => x.votes));
+    el.innerHTML = t.candidates.map(x => `
+      <div class="c ${x.votes===max && x.votes>0 ? 'lead':''}">
+        ${x.video ? `<video src="${x.video}" muted playsinline loop autoplay></video>`
+          : x.still ? `<img src="${x.still}">` : ''}
+        <div class="n">${x.votes}</div>
+        <div class="tx">${x.nick ? `<b>${esc(x.nick)}</b> ` : ''}${esc(x.text)}</div></div>`).join('');
+  }
+
+  // 접수 오버레이
+  const inbox = box.querySelector('.inbox');
+  if(t.phase === 'collect' && (t.pool||[]).length){
+    inbox.classList.add('on');
+    inbox.querySelector('.ttl').textContent = `${t.poolCount}명이 쓰는 중 · ${t.remaining}초`;
+    const sig = t.pool.map(x => x.text).join('|');
+    const list = inbox.querySelector('.list');
+    if(list.dataset.sig !== sig){
+      const prev = (list.dataset.sig || '').split('|');
+      list.dataset.sig = sig;
+      list.innerHTML = t.pool.map(x =>
+        `<div class="m ${prev.includes(x.text) ? '' : 'fresh'}">` +
+        (x.nick ? `<span class="who">${esc(x.nick)}</span>` : '') +
+        `${esc(x.text)}</div>`).join('');
+    }
+  } else {
+    inbox.classList.remove('on');
+    inbox.querySelector('.list').dataset.sig = '';
+  }
+
+  // 재생 루프 — 생성·투표 중에는 멈춘다
+  const scenes = scenesOf(t);
+  const idleEl = box.querySelector('.idle');
+  if(genOn || voteOn){ idleEl.classList.remove('on'); return; }
+  if(!scenes.length){ idleEl.classList.add('on'); return; }
+  idleEl.classList.remove('on');
+  if(performance.now() > c.until){
+    c.idx = (c.idx + 1) % scenes.length;
+    play(t.id, scenes[c.idx]);
+  }
 }
 
-function renderGenStage(st){
-  const box = $('#genStage');
-  const sig = st.candidates.map(c => c.still || '').join('|');
-  if(box.dataset.sig === sig) return;      // 같은 프레임이면 다시 그리지 않는다
-  box.dataset.sig = sig;
-  box.innerHTML = st.candidates.map(c => `
-    <div class="f">
-      ${c.still ? `<img src="${c.still}">`
-                : '<div class="wait">첫 프레임을 세우는 중</div>'}
-      <div class="cap">${esc(c.text)}</div>
-    </div>`).join('');
-}
-
-function renderGen(st){
-  $('#genList').innerHTML = st.candidates.map(c => `
-    <div class="gen">
-      ${c.status==='ready' ? '<div class="ok"></div>' : '<div class="sp"></div>'}
-      <div class="t">${esc(c.text)}</div>
-      <div class="p">${esc(c.progress||'')}</div>
-    </div>`).join('');
-}
-
-function renderVote(st){
-  const max = Math.max(1, ...st.candidates.map(c => c.votes));
-  const total = Math.max(1, st.totalVotes);
-  $('#voteGrid').style.gridTemplateColumns = `repeat(${st.candidates.length},1fr)`;
-  $('#voteGrid').innerHTML = st.candidates.map(c => `
-    <div class="vc ${c.votes===max && c.votes>0 ? 'lead':''}">
-      <div class="m">
-        ${c.video ? `<video src="${c.video}" muted playsinline loop autoplay></video>`
-          : c.still ? `<img src="${c.still}">`
-          : '<div class="ph">생성 실패</div>'}
-      </div>
-      <div class="b">
-        <div class="tx">${esc(c.text)}</div>
-        <div class="bar"><i style="width:${(c.votes/total*100).toFixed(0)}%"></i></div>
-        <div class="nv"><span>득표</span><b>${c.votes}</b></div>
-      </div>
-    </div>`).join('');
-}
-
-/* ── 처음으로 (운영자용) ──
-   두 번 눌러야 실행된다. 관람객이 지나가다 누르는 사고를 막는다. */
-let backArmed = false, backTimer = null;
+/* 전부 처음으로 — 두 번 눌러야 실행 */
+let armed = false, armTimer = null;
 $('#backBtn').addEventListener('click', async () => {
-  if(!backArmed){
-    backArmed = true;
-    $('#backBtn').textContent = '정말 처음으로?';
+  if(!armed){
+    armed = true; $('#backBtn').textContent = '정말 전부?';
     $('#backBtn').classList.add('arm');
-    clearTimeout(backTimer);
-    backTimer = setTimeout(disarmBack, 4000);
+    clearTimeout(armTimer); armTimer = setTimeout(disarm, 4000);
     return;
   }
-  disarmBack();
-  await fetch('/api/reset', {method:'POST',
-    headers:{'Content-Type':'application/json'}, body:'{"voter":"stage"}'});
-  played.clear(); playIdx = 0; playUntil = 0;
+  disarm();
+  await fetch('/api/reset', {method:'POST', headers:{'Content-Type':'application/json'},
+                             body:'{"voter":"stage"}'});
+  Object.values(cols).forEach(c => { c.played.clear(); c.idx = -1; c.until = 0; });
 });
-function disarmBack(){
-  backArmed = false;
-  $('#backBtn').textContent = '처음으로';
-  $('#backBtn').classList.remove('arm');
-  clearTimeout(backTimer);
+function disarm(){
+  armed = false; $('#backBtn').textContent = '전부 처음으로';
+  $('#backBtn').classList.remove('arm'); clearTimeout(armTimer);
 }
 
-/* ── 메인 루프 ── */
 async function tick(){
   try{
-    // story 를 한 번만 읽으면, 배포 후에도 열려 있던 화면이 옛 시나리오를 계속 보여준다.
     if(!story || performance.now() - storyAt > 15000){
       const fresh = await fetch('/api/story').then(r=>r.json()).catch(()=>null);
       if(fresh){
         const changed = JSON.stringify((fresh.scenarios||[]).map(x=>x.id))
                      !== JSON.stringify((story?.scenarios||[]).map(x=>x.id));
         story = fresh; storyAt = performance.now();
-        if(changed) $('#posters').dataset.on = '';   // 포스터 다시 그리기
+        if(changed) $('#grid').innerHTML = '';
+        $('#invite').textContent = story.invite || '';
       }
     }
     const st = await fetch('/api/round').then(r=>r.json());
+    if(!$('#grid').children.length) buildGrid(st.tracks);
+    st.tracks.forEach(renderTrack);
 
-    // 이야기가 정해지기 전 — 큰 화면에도 선택지를 띄운다
-    if(!st.scenarioId){
-      view('vIdle');
-      $('#idleHead').textContent = story.invite || '이야기를 골라주세요';
-      $('#idleSub').innerHTML = '폰으로 아래 주소에 접속해<br>이야기를 하나 골라주세요';
-      $('#idleUrl').textContent = location.origin + '/write';
-      if(!$('#posters').dataset.on){
-        $('#posters').dataset.on = '1';
-        $('#posters').innerHTML = (story.scenarios||[]).map(sc =>
-          `<div class="p"><img src="${sc.poster}"><div class="t">${esc(sc.title)}</div></div>`).join('');
-      }
-      $('#phaseText').innerHTML = '이야기 고르는 중';
-      $('#backBtn').classList.add('hide'); disarmBack();
-      renderList([], null);
-      setTimeout(tick, POLL);
-      return;
-    }
-    $('#posters').dataset.on = '';
-    $('#backBtn').classList.remove('hide');
-
-    const scenes = allScenes(st);
-
-    const label = {idle:'대기', collect:'접수', generate:'생성',
-                   vote:'투표', reveal:'발표'}[st.phase] || st.phase;
-    const clock = (st.remaining === null || st.phase === 'generate') ? '' : st.remaining + 's';
-    $('#phaseText').innerHTML =
-      `${st.round}R · ${label} <b>${clock}</b>` +
-      (st.phase === 'collect' ? ` · ${st.poolCount}명` : '');
-
-    if(st.phase === 'generate'){
-      view('vGen'); renderGenStage(st); renderGen(st); renderList(scenes, null);
-      $('#inbox').classList.remove('on');
-    } else if(st.phase === 'vote'){
-      view('vVote'); renderVote(st); renderList(scenes, null);
-    } else if(st.phase === 'reveal'){
-      const w = st.candidates.find(c => c.id === st.winner);
-      view('vPlay');
-      if(lastPhase !== 'reveal' && w){
-        playScene({n:'', label:'', caption:w.text, image:w.still, video:w.video, hold:6000});
-      }
-      renderList(scenes, 'c' + (scenes.length ? scenes[scenes.length-1].n : ''));
-    } else {
-      // idle / collect — 이야기 루프
-      const pool = st.pool || [];
-      if(st.phase === 'collect' && pool.length){
-        $('#inbox').classList.add('on');
-        $('#inboxTtl').textContent =
-          `${st.poolCount}명이 쓰는 중 · ${st.remaining}초 남음`;
-        const sig = pool.join('|');
-        if($('#inboxList').dataset.sig !== sig){
-          const prev = ($('#inboxList').dataset.sig || '').split('|');
-          $('#inboxList').dataset.sig = sig;
-          $('#inboxList').innerHTML = pool.map(t =>
-            `<div class="m ${prev.includes(t) ? '' : 'fresh'}">${esc(t)}</div>`).join('');
-        }
-      } else {
-        $('#inbox').classList.remove('on');
-        $('#inboxList').dataset.sig = '';
-      }
-      const playable = scenes;
-      if(!playable.length){ view('vIdle'); }
-      else {
-        view('vPlay');
-        if(performance.now() > playUntil){
-          playIdx = (playIdx + 1) % playable.length;
-          playScene(playable[playIdx]);
-        }
-        renderList(scenes, playable[playIdx]?.key);
-      }
-    }
-
-    $('#idleUrl').textContent = location.origin + '/write';
+    $('#url').textContent = location.origin + '/write';
+    $('#total').textContent = st.tracks.reduce((a,t) => a + t.canon.length, 0);
     $('#spend').textContent = st.live
-      ? `LIVE · 생성 ${st.generated}건 · 약 $${st.spentUsd}`
-      : `드라이런 · 생성 ${st.generated}건`;
-    lastPhase = st.phase;
-  }catch(e){ /* 서버가 잠깐 죽어도 화면은 유지 */ }
+      ? `생성 ${st.generated}건 · 약 $${st.spentUsd}` : '드라이런';
+  }catch(e){ /* 잠깐 끊겨도 화면은 유지 */ }
   setTimeout(tick, POLL);
 }
 tick();

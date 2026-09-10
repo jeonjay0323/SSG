@@ -19,6 +19,7 @@
     "startFrame": "/scenes/worlds/office_horror/seed.png",
     "tier": "lite",
     "seconds": 4,
-    "restageEvery": 2
+    "restageEvery": 2,
+    "aspect": "9:16"
   }
 }

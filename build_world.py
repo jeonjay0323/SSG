@@ -99,7 +99,7 @@ def build_refs(world_id):
     print(f"  → {out}")
 
 
-def build_intro(world_id, scene_desc):
+def build_intro(world_id, scene_desc, ratio="9:16"):
     from PIL import Image
     w = load(world_id)
     refs = sorted((ROOT / w["refsDir"]).glob("*.png"))
@@ -114,7 +114,7 @@ def build_intro(world_id, scene_desc):
         + f"\nTHIS SHOT:\n{scene_desc}\n"
         "The character does not look at the camera."
     )
-    p = generate(parts, ROOT / w["refsDir"].replace("/refs", "") / "intro.png")
+    p = generate(parts, ROOT / w["refsDir"].replace("/refs", "") / "intro.png", ratio)
     print(f"  ✓ {p}")
 
 
