@@ -54,7 +54,7 @@ python3 app/server.py --live --budget 15 # 실제 생성
 
 | | |
 |---|---|
-| `03_Archive/drama/novel/` | 자체 IP 「왕이었는데 아이돌로 환생했다」 샘플 원고 |
+| `03_Archive/novel/` | 자체 IP 「왕이었는데 아이돌로 환생했다」 샘플 원고 |
 | `03_Archive/progress/` | 진행 기록 |
 
 ---
