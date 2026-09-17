@@ -16,7 +16,7 @@ import time
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent   # 01_Product/Theater
-OUT = ROOT / "static" / "scenes"
+OUT = ROOT / "Static" / "scenes"
 ACTOR = OUT / "actor" / "anchor.png"
 
 MODEL = "gemini-2.5-flash-image"

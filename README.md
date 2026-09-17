@@ -17,8 +17,8 @@
 
 ```bash
 cd 01_Product/Theater
-python3 app/server.py                    # 드라이런 (생성 호출 없음, 무료)
-python3 app/server.py --live --budget 15 # 실제 생성
+python3 App/server.py                    # 드라이런 (생성 호출 없음, 무료)
+python3 App/server.py --live --budget 15 # 실제 생성
 ```
 
 자세한 설계와 배포는 [01_Product/Theater/README.md](01_Product/Theater/README.md).

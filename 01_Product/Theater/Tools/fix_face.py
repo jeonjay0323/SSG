@@ -25,7 +25,7 @@ import sys
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent   # 01_Product/Theater
-REFS_DIR = ROOT / "static" / "scenes" / "refs"
+REFS_DIR = ROOT / "Static" / "scenes" / "refs"
 MODEL = "gemini-2.5-flash-image"
 REGIONS = ["us-central1", "us-east4", "us-west1", "us-west4"]
 

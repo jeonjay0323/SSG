@@ -20,8 +20,8 @@ import time
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent   # 01_Product/Theater
-OUT = ROOT / "static" / "scenes"
-ACTOR = ROOT / "static" / "scenes" / "actor" / "anchor.png"
+OUT = ROOT / "Static" / "scenes"
+ACTOR = ROOT / "Static" / "scenes" / "actor" / "anchor.png"
 
 MODEL = "gemini-2.5-flash-image"
 REGIONS = ["us-central1", "us-east4", "us-west1", "us-west4",

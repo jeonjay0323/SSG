@@ -1,17 +1,17 @@
 # 런타임 산출물
 canon.json
 canon.tmp
-clips/
+Clips/
 *.mp4
 __pycache__/
 *.pyc
 .DS_Store
 
 # 파생 프레임 (실행 중 생성)
-01_Product/Theater/static/scenes/chain/
+01_Product/Theater/Static/scenes/chain/
 
 # 작가 스튜디오 데모의 트레일러는 저장소에 포함한다 (*.mp4 예외)
-!01_Product/Studio/assets/trailer.mp4
+!01_Product/Studio/Assets/trailer.mp4
 
 # 로컬 전용 대용량 작업물 (저장소에 올리지 않음)
 _local/

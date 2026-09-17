@@ -25,7 +25,7 @@ import time
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent   # 01_Product/Theater
-CLIPS_DIR = Path(os.environ.get("SSG_CLIPS_DIR", str(ROOT / "clips")))
+CLIPS_DIR = Path(os.environ.get("SSG_CLIPS_DIR", str(ROOT / "Clips")))
 
 # 리전 로테이션 — 기존 스크립트와 동일한 전략(할당량 분산)
 REGIONS = ["us-central1", "us-east4", "us-west1", "us-west4"]

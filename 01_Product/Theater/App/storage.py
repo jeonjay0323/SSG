@@ -20,7 +20,7 @@ LOCAL_STATE = Path(__file__).resolve().parent.parent   # 01_Product/Theater
 # 버킷이 없을 때 클립을 둘 곳. generate_clip.py 의 CLIPS_DIR 과 같은 자리를
 # 가리켜야 한다 — 예전에는 홈 디렉터리의 절대경로가 박혀 있어서, 폴더 이름이
 # 바뀐 뒤로 쓰는 곳과 읽는 곳이 어긋나 로컬 재생이 404 였다.
-LOCAL_CLIPS = Path(os.environ.get("SSG_LOCAL_CLIPS", str(LOCAL_STATE / "clips")))
+LOCAL_CLIPS = Path(os.environ.get("SSG_LOCAL_CLIPS", str(LOCAL_STATE / "Clips")))
 
 _client = None
 

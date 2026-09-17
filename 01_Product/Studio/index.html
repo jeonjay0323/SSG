@@ -485,7 +485,7 @@ function viewCasting(){
 }
 
 function vVideoHTML(){   // 메인 비디오 화면 — 항상 트레일러 영상 (생성 없이 바로)
-  return `<div class="v-video"><video class="v-media" src="assets/trailer.mp4" muted loop playsinline></video><div class="cap">자막자리</div>${vCtl()}</div>`;
+  return `<div class="v-video"><video class="v-media" src="Assets/trailer.mp4" muted loop playsinline></video><div class="cap">자막자리</div>${vCtl()}</div>`;
 }
 function viewVideo(){
   const right = `<div class="counter"><span>전체</span><b style="color:var(--primary)">7씬</b></div>
@@ -529,7 +529,7 @@ function vPanel(){
 
 function viewPreview(){
   return `<div class="overlay preview" onclick="closeOverlay()">
-    <div class="frame" onclick="event.stopPropagation()"><video class="v-media" src="assets/trailer.mp4" loop playsinline></video><div class="cap">자막자리</div>${vCtl()}</div>
+    <div class="frame" onclick="event.stopPropagation()"><video class="v-media" src="Assets/trailer.mp4" loop playsinline></video><div class="cap">자막자리</div>${vCtl()}</div>
   </div>`;
 }
 function viewLoadingNew(){   // 페이지 이동 시 잠깐 뜨는 로딩 (슥 로고)

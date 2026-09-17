@@ -27,7 +27,7 @@ import subprocess
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent   # 01_Product/Theater
-REFS_DIR = ROOT / "static" / "scenes" / "refs"
+REFS_DIR = ROOT / "Static" / "scenes" / "refs"
 MODEL = "gemini-2.5-flash-image"
 REF_LIMIT = 3      # 속도/정확도 균형점 (5장 16.6초 / 3장 11.0초 실측)
 REGIONS = ["us-central1", "us-east4", "us-west1", "us-west4"]
@@ -102,7 +102,7 @@ SHOT_HOLD = {
 
 # ── 월드 (연출 프롬프트) ───────────────────────────────
 # worlds/<id>.json 에서 읽는다. 코드를 고치지 않고 톤·샷·배우를 바꿀 수 있다.
-WORLDS_DIR = ROOT / "config" / "worlds"
+WORLDS_DIR = ROOT / "Config" / "worlds"
 _world_cache = {}
 
 
@@ -260,7 +260,7 @@ def restage(prev_frame, out_path, shot, beat=None, refs_dir=None, world=None,
     prev_frame, out_path = Path(prev_frame), Path(out_path)
     if isinstance(world, str):
         world = load_world(world)
-    refs_dir = refs_dir or (ROOT / "static" / world["refsDir"] if world else REFS_DIR)
+    refs_dir = refs_dir or (ROOT / "Static" / world["refsDir"] if world else REFS_DIR)
     # 레퍼런스가 많을수록 느리다. 얼굴 정보가 많은 순으로 3장만.
     order = ["ref_closeup", "ref_quarter", "ref_full", "ref_front", "ref_profile"]
     pool = {p.stem: p for p in Path(refs_dir).glob("*.png")}

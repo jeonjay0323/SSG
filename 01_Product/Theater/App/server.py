@@ -41,7 +41,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent   # 01_Product/Theater
 ACTORS_DIR = Path.home() / "Desktop" / "SSG" / "09_Actors"
-SCENES_DIR = ROOT / "static" / "scenes"          # 전시 전용 도입부 이미지 (이미지에 동봉)
+SCENES_DIR = ROOT / "Static" / "scenes"          # 전시 전용 도입부 이미지 (이미지에 동봉)
 if ACTORS_DIR.exists():               # 로컬 개발에서만 존재
     sys.path.insert(0, str(ACTORS_DIR))
 
@@ -50,10 +50,10 @@ import storage
 # 체인 프레임은 파생물이라 휘발성 경로에 둔다. 없으면 원본 클립에서 다시 뽑는다.
 CHAIN_DIR = Path(os.environ.get("SSG_TMP", "/tmp/ssg")) / "chain"
 
-STORY_PATH = ROOT / "config" / "story.json"
+STORY_PATH = ROOT / "Config" / "story.json"
 
 
-SCENARIOS_DIR = ROOT / "config" / "scenarios"
+SCENARIOS_DIR = ROOT / "Config" / "scenarios"
 
 
 def load_story():
@@ -825,9 +825,9 @@ class Handler(BaseHTTPRequestHandler):
     def do_GET(self):
         p = self.path.split("?")[0]
         if p in ("/", "/write", "/write.html"):
-            return self._file(ROOT / "templates" / "write.html", "text/html; charset=utf-8")
+            return self._file(ROOT / "Templates" / "write.html", "text/html; charset=utf-8")
         if p in ("/stage", "/stage.html"):
-            return self._file(ROOT / "templates" / "stage.html", "text/html; charset=utf-8")
+            return self._file(ROOT / "Templates" / "stage.html", "text/html; charset=utf-8")
         if p == "/api/round":
             return self._send(200, ENGINE.snapshot())
         if p == "/api/story":

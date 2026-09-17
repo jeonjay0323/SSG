@@ -20,9 +20,9 @@ RUN pip install --no-cache-dir -r requirements.txt
 # 디렉터리 단위로 통째로 복사한다.
 # 예전에는 파일을 하나씩 나열하다 restage.py / scenarios / worlds 를 빠뜨려
 # 리스테이징이 조용히 건너뛰어지거나 컨테이너가 크래시 루프를 돌았다.
-COPY app/       ./app/
-COPY config/    ./config/
-COPY templates/ ./templates/
-COPY static/    ./static/
+COPY App/       ./App/
+COPY Config/    ./Config/
+COPY Templates/ ./Templates/
+COPY Static/    ./Static/
 
-CMD ["python", "app/server.py"]
+CMD ["python", "App/server.py"]

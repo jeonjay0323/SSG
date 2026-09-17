@@ -4,8 +4,8 @@ __pycache__/
 .DS_Store
 canon.json
 canon.tmp
-clips/
-static/scenes/chain/
-static/scenes/**/_*.png
+Clips/
+Static/scenes/chain/
+Static/scenes/**/_*.png
 # CLI 도구는 컨테이너에서 안 쓴다 (Dockerfile 이 app/ 만 복사하지만 업로드도 줄인다)
-tools/
+Tools/

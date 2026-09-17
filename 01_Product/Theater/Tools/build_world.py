@@ -38,7 +38,7 @@ def project():
 
 
 def load(world_id):
-    return json.loads((ROOT / "config" / "worlds" / f"{world_id}.json").read_text(encoding="utf-8"))
+    return json.loads((ROOT / "Config" / "worlds" / f"{world_id}.json").read_text(encoding="utf-8"))
 
 
 def generate(parts, out_path, ratio="16:9"):
@@ -80,7 +80,7 @@ def build_refs(world_id):
     """배우 레퍼런스 시트. 첫 장을 앵커로 나머지를 뽑아 얼굴을 맞춘다."""
     from PIL import Image
     w = load(world_id)
-    out = ROOT / "static" / w["refsDir"]
+    out = ROOT / "Static" / w["refsDir"]
     anchor = None
     for i, (key, angle) in enumerate(REF_ANGLES.items()):
         parts = []
@@ -102,7 +102,7 @@ def build_refs(world_id):
 def build_intro(world_id, scene_desc, ratio="9:16"):
     from PIL import Image
     w = load(world_id)
-    refs = sorted((ROOT / "static" / w["refsDir"]).glob("*.png"))
+    refs = sorted((ROOT / "Static" / w["refsDir"]).glob("*.png"))
     if not refs:
         print("[Error] 먼저 refs 를 만드세요")
         sys.exit(1)
@@ -114,7 +114,7 @@ def build_intro(world_id, scene_desc, ratio="9:16"):
         + f"\nTHIS SHOT:\n{scene_desc}\n"
         "The character does not look at the camera."
     )
-    p = generate(parts, ROOT / "static" / w["refsDir"].replace("/refs", "") / "intro.png", ratio)
+    p = generate(parts, ROOT / "Static" / w["refsDir"].replace("/refs", "") / "intro.png", ratio)
     print(f"  ✓ {p}")
 
 

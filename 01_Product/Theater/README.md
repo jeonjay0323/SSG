@@ -24,29 +24,29 @@
 ## 구성
 
 ```
-app/         서버 — Dockerfile 이 실행하는 것
-tools/       CLI — 세계 만들기 · 레퍼런스 생성 · 얼굴 교정
-templates/   write.html  stage.html
-config/      story.json  scenarios/  worlds/
-static/      scenes/ — 도입부 스틸 · 인물 레퍼런스
+App/         서버 — Dockerfile 이 실행하는 것
+Tools/       CLI — 세계 만들기 · 레퍼런스 생성 · 얼굴 교정
+Templates/   write.html  stage.html
+Config/      story.json  scenarios/  worlds/
+Static/      scenes/ — 도입부 스틸 · 인물 레퍼런스
 ```
 
 | 파일 | 역할 |
 |---|---|
-| `app/server.py` | 라운드 상태머신 · 투표 · 입력 필터 · 예산 캡 (Python 표준 라이브러리만) |
-| `app/restage.py` | **핵심** — 다음 컷의 시작 프레임을 다시 세운다 (얼굴 교정 + 샷 문법) |
-| `app/generate_clip.py` | 시작 프레임 → Veo 3.1 영상 |
-| `app/beat.py` | 관람객 문장 → 촬영 가능한 장면 묘사 (글자 렌더 차단 · 세계 접지) |
-| `app/frames.py` | 프레임 추출 · 클립 트림 (체이닝 이음매 맞추기) |
-| `app/storage.py` | 로컬 / GCS 양쪽 지원 |
-| `templates/write.html` | 폰 화면 — 선택 · 입력 · 투표 |
-| `templates/stage.html` | 대형 화면 — 상영 · 실시간 득표 |
-| `config/story.json` | 공통 설정 — 라운드 타이밍, 시나리오 목록 |
-| `config/scenarios/*.json` | **이야기** — 제목 · 로그라인 · 첫 문장 · 도입 씬 |
-| `config/worlds/*.json` | **연출** — 배우 · 의상 · 색감 · 감독 레이어 · 샷 6종 · 네거티브 |
+| `App/server.py` | 라운드 상태머신 · 투표 · 입력 필터 · 예산 캡 (Python 표준 라이브러리만) |
+| `App/restage.py` | **핵심** — 다음 컷의 시작 프레임을 다시 세운다 (얼굴 교정 + 샷 문법) |
+| `App/generate_clip.py` | 시작 프레임 → Veo 3.1 영상 |
+| `App/beat.py` | 관람객 문장 → 촬영 가능한 장면 묘사 (글자 렌더 차단 · 세계 접지) |
+| `App/frames.py` | 프레임 추출 · 클립 트림 (체이닝 이음매 맞추기) |
+| `App/storage.py` | 로컬 / GCS 양쪽 지원 |
+| `Templates/write.html` | 폰 화면 — 선택 · 입력 · 투표 |
+| `Templates/stage.html` | 대형 화면 — 상영 · 실시간 득표 |
+| `Config/story.json` | 공통 설정 — 라운드 타이밍, 시나리오 목록 |
+| `Config/scenarios/*.json` | **이야기** — 제목 · 로그라인 · 첫 문장 · 도입 씬 |
+| `Config/worlds/*.json` | **연출** — 배우 · 의상 · 색감 · 감독 레이어 · 샷 6종 · 네거티브 |
 
-`python3 tools/build_world.py <world> refs|intro` 로 새 세계의 배우 레퍼런스와 도입 이미지를 만든다.
-프롬프트는 전부 `config/worlds/<id>.json` 에서 읽으므로 코드를 고칠 필요가 없다.
+`python3 Tools/build_world.py <world> refs|intro` 로 새 세계의 배우 레퍼런스와 도입 이미지를 만든다.
+프롬프트는 전부 `Config/worlds/<id>.json` 에서 읽으므로 코드를 고칠 필요가 없다.
 
 **코드에 프롬프트가 없다.** 톤·샷·배우를 바꾸려면 JSON 만 고치면 된다.
 
@@ -101,9 +101,9 @@ standard 티어 + 8초에서만 동작한다. 그래서 인물 고정은 Veo 가
 pip install -r 01_Product/Theater/requirements.txt
 
 cd 01_Product/Theater
-python3 app/server.py                          # 드라이런 (생성 호출 없음, 무료)
-python3 app/server.py --live --budget 15       # 실제 생성 · 누적 $15 에서 자동 드라이런 전환
-python3 app/server.py --live --fast            # 라운드를 짧게 (테스트용)
+python3 App/server.py                          # 드라이런 (생성 호출 없음, 무료)
+python3 App/server.py --live --budget 15       # 실제 생성 · 누적 $15 에서 자동 드라이런 전환
+python3 App/server.py --live --fast            # 라운드를 짧게 (테스트용)
 ```
 
 `http://localhost:8778/write` · `http://localhost:8778/stage`
@@ -140,7 +140,7 @@ gcloud run deploy ssg-theater --source 01_Product/Theater --region us-central1 \
 
 ## 자산
 
-`static/scenes/` 의 이미지만 저장소에 있다. 영상(mp4)은 용량이 커서 제외했고 GCS 에 둔다.
+`Static/scenes/` 의 이미지만 저장소에 있다. 영상(mp4)은 용량이 커서 제외했고 GCS 에 둔다.
 `story.json` 이 가리키는 `/clips/*.mp4` 를 버킷의 `clips/` 에 올려두면 된다.
 
 ---
