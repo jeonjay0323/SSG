@@ -114,6 +114,19 @@
   }
   .btn.sub-btn:hover{opacity:.7}
 
+  /* 쓰기 보조 — 문장 하나 + 키워드 둘 */
+  .aid{margin-top:12px;display:flex;flex-direction:column;gap:8px}
+  .aid .cap{font-size:12px;color:var(--dust)}
+  .aid .row{display:flex;flex-wrap:wrap;gap:6px}
+  .chip{
+    padding:7px 11px;border-radius:999px;font-size:13px;line-height:1.4;
+    border:1px solid var(--outline-light);background:transparent;
+    color:var(--on-surface);text-align:left;transition:opacity .15s;
+  }
+  .chip:hover{opacity:.7}
+  .chip.sent{width:100%;border-style:dashed}
+  .chip.kw{color:var(--dust)}
+
   /* ── 시나리오 선택 ── */
   .scen{
     border:1px solid var(--outline-light);border-radius:4px;overflow:hidden;
@@ -216,6 +229,11 @@
     <textarea id="text" placeholder="다음 이야기를 한 문장으로" maxlength="60"
               autocomplete="off" autocorrect="off"></textarea>
     <div class="count" id="count">0 / 40</div>
+    <div class="aid" id="aid" hidden>
+      <div class="cap">막히면 눌러보세요</div>
+      <div class="row"><button class="chip sent" id="aidSent"></button></div>
+      <div class="row" id="aidKw"></div>
+    </div>
   </div>
   <div style="height:14px"></div>
   <button class="btn" id="send" disabled>이 문장 보내기</button>
@@ -407,13 +425,54 @@ ta.addEventListener('input', () => {
   $('#send').disabled = n === 0 || over;
 });
 
+// ── 쓰기 보조 ──
+// 문장은 통째로 채우고 키워드는 덧붙인다.
+// 어느 쪽을 쓰는지가 그대로 관찰 자료가 된다.
+let aidUsed = [];
+let lastAidKey = '';
+function pick(arr, n){
+  const a = [...(arr||[])];
+  const out = [];
+  while(a.length && out.length < n) out.push(a.splice(Math.floor(Math.random()*a.length),1)[0]);
+  return out;
+}
+function drawAid(sc){
+  const sug = sc?.suggest;
+  const box = $('#aid');
+  if(!sug?.sentences?.length){ box.hidden = true; return; }
+  box.hidden = false;
+  aidUsed = [];
+
+  const sent = pick(sug.sentences, 1)[0];
+  const bs = $('#aidSent');
+  bs.textContent = sent;
+  bs.onclick = () => {
+    ta.value = sent; ta.dispatchEvent(new Event('input'));
+    if(!aidUsed.includes('sentence')) aidUsed.push('sentence');
+    ta.focus();
+  };
+
+  $('#aidKw').innerHTML = pick(sug.keywords, 2)
+    .map(k => `<button class="chip kw" data-k="${k}">${k}</button>`).join('');
+  $('#aidKw').querySelectorAll('.chip').forEach(el => {
+    el.onclick = () => {
+      const k = el.dataset.k;
+      ta.value = (ta.value.trim() + ' ' + k).trim();
+      ta.dispatchEvent(new Event('input'));
+      if(!aidUsed.includes('keyword')) aidUsed.push('keyword');
+      ta.focus();
+    };
+  });
+}
+
 $('#send').addEventListener('click', async () => {
   if(sending) return;
   sending = true;
   $('#send').disabled = true;
   try{
     const res = await post('/api/submit',
-      {scenarioId: myTrack, text: ta.value.trim(), nick});
+      {scenarioId: myTrack, text: ta.value.trim(), nick,
+       aid: aidUsed.length ? aidUsed.join('+') : 'none'});
     if(res.ok){
       // 라운드 번호는 서버 응답에서 받는다.
       // lastRound 를 쓰면 폴링이 아직 안 돈 시점에 -1 이 들어가 입력 화면으로 되돌아간다.
@@ -536,6 +595,11 @@ async function tick(){
       lastRound = t.round; myVote = null;
       if(submittedRound !== t.round) submittedRound = -1;
     }
+
+    // 트랙이나 라운드가 바뀔 때만 보조를 다시 뽑는다.
+    // 폴링마다 다시 그리면 쓰는 도중에 제안이 바뀐다.
+    const aidKey = `${t.id}:${t.round}`;
+    if(aidKey !== lastAidKey){ lastAidKey = aidKey; drawAid(sc); }
 
     const label = {idle:'대기', collect:'접수', generate:'생성',
                    vote:'투표', reveal:'발표', finale:'완결'}[t.phase] || t.phase;

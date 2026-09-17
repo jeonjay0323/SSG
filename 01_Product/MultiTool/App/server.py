@@ -886,6 +886,9 @@ class Handler(BaseHTTPRequestHandler):
             if not tr:
                 return self._send(200, {"ok": False, "message": "이야기를 골라주세요"})
             ok, res = tr.submit(body.get("text"), voter, body.get("nick"))
+            if ok:
+                # 쓰기 보조를 썼는지 남긴다 — sentence / keyword / 둘 다 / none
+                print(f"    보조: {(body.get('aid') or 'none')[:24]}", flush=True)
             if ok and ENGINE.can_generate():
                 # 접수 창이 도는 동안 다음 컷 프레임을 미리 세워둔다.
                 prestage(ENGINE, tr, res["id"], res["text"])
