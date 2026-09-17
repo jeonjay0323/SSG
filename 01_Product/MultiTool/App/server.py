@@ -96,6 +96,7 @@ class Track:
         self.contested = False
         self.canon = []
         self.cycle = 0        # 완결·초기화 때마다 증가 (체인 프레임 캐시 분리용)
+        self.collect_opened = None   # 접수 창이 열린 시각 (롤링 연장의 기준)
         self.start_round()
 
     # ── 단계 ──
@@ -150,6 +151,19 @@ class Track:
             opened = self.phase == "idle"
             if opened:
                 self._set("collect", self.cfg["collectSeconds"])
+                self.collect_opened = time.monotonic()
+            else:
+                # 롤링 연장 — 새 문장이 들어올 때마다 창을 조금 늘린다.
+                # 고정 창을 길게 잡으면 혼자 보낸 사람까지 그만큼 기다려야 한다.
+                # 늘리기만 하고 줄이지 않으며, 총 길이는 상한을 넘지 않는다.
+                ext = self.cfg.get("collectExtendSeconds", 0)
+                cap = self.cfg.get("collectMaxSeconds", 0)
+                if ext and self.collect_opened is not None:
+                    elapsed = time.monotonic() - self.collect_opened
+                    total = min(elapsed + ext, cap) if cap else elapsed + ext
+                    nd = self.collect_opened + total
+                    if self.deadline is None or nd > self.deadline:
+                        self.deadline = nd
             sub = {"id": f"{self.sid}:{uuid.uuid4().hex[:8]}", "text": text,
                    "voter": voter, "nick": self.clean_nick(nick)}
             self.pool.append(sub)

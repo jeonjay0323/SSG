@@ -7,12 +7,14 @@
     "maxChars": 40
   },
   "round": {
-    "_comment": "라운드는 시계가 아니라 '첫 제출'로 시작한다. 첫 문장이 들어오면 collectSeconds 만큼 동시 접수 창이 열리고, 그 안에 몇 명이 모였는지에 따라 투표 여부가 갈린다.",
-    "collectSeconds": 15,
+    "_comment": "라운드는 시계가 아니라 '첫 제출'로 시작한다. 첫 문장이 들어오면 collectSeconds 만큼 접수 창이 열리고, 그 안에 새 문장이 들어올 때마다 collectExtendSeconds 만큼 collectMaxSeconds 까지 늘어난다. 혼자면 짧게 끝나고 붐비면 자연히 모인다.",
+    "collectSeconds": 20,
     "voteSeconds": 60,
     "revealSeconds": 10,
     "candidates": 3,
-    "finaleSeconds": 25
+    "finaleSeconds": 25,
+    "collectExtendSeconds": 12,
+    "collectMaxSeconds": 45
   },
   "_note": "시나리오는 scenarios/<id>.json, 연출 프롬프트는 worlds/<id>.json 에 있다. 각 시나리오가 world 를 하나 가리키며, 시나리오마다 다른 월드를 써도 된다.",
   "scenarios": [
