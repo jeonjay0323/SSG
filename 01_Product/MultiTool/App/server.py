@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-슥 · 한 줄 극장 — 로컬 서버 (라운드 + 투표)
+슥 · 멀티툴 — 로컬 서버 (라운드 + 투표)
 
   폰 /write  ──POST /api/submit──▶  라운드 후보 풀
                                         │ 접수 마감
@@ -39,7 +39,7 @@ from concurrent.futures import ThreadPoolExecutor
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 
-ROOT = Path(__file__).resolve().parent.parent   # 01_Product/Theater
+ROOT = Path(__file__).resolve().parent.parent   # 01_Product/MultiTool
 ACTORS_DIR = Path.home() / "Desktop" / "SSG" / "09_Actors"
 SCENES_DIR = ROOT / "Static" / "scenes"          # 전시 전용 도입부 이미지 (이미지에 동봉)
 if ACTORS_DIR.exists():               # 로컬 개발에서만 존재
@@ -940,7 +940,7 @@ def main():
     mode = (f"LIVE (최대 {args.max}건 · 건당 약 ${per:.2f}{cap})"
             if args.live else "DRY-RUN (무료)")
     print("─" * 60)
-    print(f"  슥 · 한 줄 극장 — {mode}")
+    print(f"  슥 · 멀티툴 — {mode}")
     print(f"  라운드: 첫 문장 → 동시 접수 {cfg['collectSeconds']}s → 생성 → "
           f"[2명 이상이면 투표 {cfg['voteSeconds']}s] → 발표")
     print(f"  세 이야기가 각각 독립적으로 돕니다")

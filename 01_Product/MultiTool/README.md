@@ -1,4 +1,4 @@
-# 슥 · 한 줄 극장
+# 슥 · 멀티툴
 
 참여형 창작 설치물. 참여자가 폰으로 **한 문장**을 보내면 그 문장이 영상 장면이 되고,
 장면들이 이어져 하나의 웹드라마가 된다.
@@ -98,9 +98,9 @@ standard 티어 + 8초에서만 동작한다. 그래서 인물 고정은 Veo 가
 ## 실행
 
 ```bash
-pip install -r 01_Product/Theater/requirements.txt
+pip install -r 01_Product/MultiTool/requirements.txt
 
-cd 01_Product/Theater
+cd 01_Product/MultiTool
 python3 App/server.py                          # 드라이런 (생성 호출 없음, 무료)
 python3 App/server.py --live --budget 15       # 실제 생성 · 누적 $15 에서 자동 드라이런 전환
 python3 App/server.py --live --fast            # 라운드를 짧게 (테스트용)
@@ -115,7 +115,7 @@ python3 App/server.py --live --fast            # 라운드를 짧게 (테스트�
 
 ```bash
 # 저장소 루트에서 실행한다
-gcloud run deploy ssg-theater --source 01_Product/Theater --region us-central1 \
+gcloud run deploy ssg-theater --source 01_Product/MultiTool --region us-central1 \
   --allow-unauthenticated --no-cpu-throttling \
   --min-instances 1 --max-instances 1 --memory 2Gi --cpu 2 --timeout 3600 \
   --set-env-vars "SSG_LIVE=1,SSG_BUDGET=15,SSG_BUCKET=<버킷>,GOOGLE_CLOUD_PROJECT=<프로젝트>"
@@ -145,5 +145,5 @@ gcloud run deploy ssg-theater --source 01_Product/Theater --region us-central1 \
 
 ---
 
-이 설치물의 기획 의도와 설계 근거는 [한 줄 극장 기획안](../../02_Docs/Plan/한%20줄%20극장%20기획안.md) 에 있다.
+이 설치물의 기획 의도와 설계 근거는 [멀티툴 기획안](../../02_Docs/Plan/멀티툴%20기획안.md) 에 있다.
 그 밖 기획 문서는 `02_Docs/` 에 있다.

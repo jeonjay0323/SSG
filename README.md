@@ -17,8 +17,8 @@
 
 | | 상태 | 내용 |
 |---|---|---|
-| **Theater** — 한 줄 극장 | **배포 중** | 참여형 설치물. 참여자 문장 → 실시간 영상 생성 → 이어 붙이기 |
-| **Studio** — 작가 스튜디오 | 프로토타입 | 원고 → 캐스팅 → 영상화. 클릭 가능한 인터랙티브 목업 |
+| **멀티툴** | **배포 중** | 참여형 설치물. 참여자 문장 → 실시간 영상 생성 → 이어 붙이기 |
+| **솔로툴** | 프로토타입 | 원고 → 캐스팅 → 영상화. 클릭 가능한 인터랙티브 목업 |
 
 Python 2,785줄 · HTML 957줄. 서버는 표준 라이브러리만 쓴다.
 
@@ -153,7 +153,7 @@ standard 티어 + 8초에서만 동작한다. 앞 장면에서 이어가려면 �
 | 독자 거부감 | 독자는 영상화된 캐릭터를 거부한다 — *"몰입이 깨진다"*. 대응 가설 4개는 **전부 미검증** |
 | 참여자 관찰 미설계 | 가설을 시험할 유일한 자리인데 측정이 준비돼 있지 않다 |
 | 인터뷰 표본 | 소수. 방향을 잡기엔 충분했지만 근거로는 얇다 |
-| Studio | 클릭 가능한 목업. 실제 파이프라인은 Theater 에만 있다 |
+| 솔로툴 | 클릭 가능한 목업. 실제 파이프라인은 멀티툴 에만 있다 |
 
 ---
 
@@ -161,24 +161,24 @@ standard 티어 + 8초에서만 동작한다. 앞 장면에서 이어가려면 �
 
 ```
 01_Product/
-  Theater/   App · Config · Static · Templates · Tools
-  Studio/
+  멀티툴/   App · Config · Static · Templates · Tools
+  솔로툴/
 02_Docs/     Plan · Research
 ```
 
 ```bash
-cd 01_Product/Theater
+cd 01_Product/MultiTool
 python3 App/server.py                     # 드라이런 (생성 호출 없음, 무료)
 python3 App/server.py --live --budget 15  # 실제 생성
 ```
 
-설계와 배포는 [01_Product/Theater/README.md](01_Product/Theater/README.md).
+설계와 배포는 [01_Product/MultiTool/README.md](01_Product/MultiTool/README.md).
 
 ### 문서
 
 | | |
 |---|---|
-| [한 줄 극장 기획안](02_Docs/Plan/한%20줄%20극장%20기획안.md) | 설치물의 기획 의도와 설계 근거 |
+| [멀티툴 기획안](02_Docs/Plan/멀티툴%20기획안.md) | 설치물의 기획 의도와 설계 근거 |
 | [연구 질문](02_Docs/Research/연구%20질문.md) | **연구 축** — 여럿이 함께 AI로 만드는 행위가 성립하는가 |
 | [비교 인터뷰 가이드](02_Docs/Research/비교%20인터뷰%20가이드.md) | 혼자 vs 같이, 피험자 내 비교 설계와 인터뷰지 |
 | [작가 인터뷰](02_Docs/Research/작가%20인터뷰.md) | 방향을 결정한 1차 자료 |
