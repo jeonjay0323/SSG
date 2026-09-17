@@ -121,11 +121,22 @@
   .chip{
     padding:7px 11px;border-radius:999px;font-size:13px;line-height:1.4;
     border:1px solid var(--outline-light);background:transparent;
-    color:var(--on-surface);text-align:left;transition:opacity .15s;
+    color:var(--dust);text-align:left;transition:opacity .15s;
   }
   .chip:hover{opacity:.7}
-  .chip.sent{width:100%;border-style:dashed}
-  .chip.kw{color:var(--dust)}
+  .chip:active{opacity:.55}
+
+  /* 문장 제안은 '누르는 것'으로 읽혀야 한다.
+     점선 테두리는 입력칸처럼 보여서 눌러볼 생각을 안 한다. */
+  .chip.sent{
+    width:100%;display:flex;align-items:center;gap:8px;
+    padding:12px 14px;border-radius:4px;
+    border:1px solid var(--violet);background:rgba(161,0,255,.12);
+    color:var(--on-surface);font-weight:500;font-size:14px;
+  }
+  .chip.sent::before{
+    content:'+';font-size:15px;line-height:1;color:var(--violet);flex:none;
+  }
 
   /* ── 시나리오 선택 ── */
   .scen{
