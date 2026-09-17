@@ -39,7 +39,7 @@ from concurrent.futures import ThreadPoolExecutor
 from http.server import BaseHTTPRequestHandler, ThreadingHTTPServer
 from pathlib import Path
 
-ROOT = Path(__file__).resolve().parent.parent   # services/theater
+ROOT = Path(__file__).resolve().parent.parent   # 01_Product/theater
 ACTORS_DIR = Path.home() / "Desktop" / "SSG" / "09_Actors"
 SCENES_DIR = ROOT / "static" / "scenes"          # 전시 전용 도입부 이미지 (이미지에 동봉)
 if ACTORS_DIR.exists():               # 로컬 개발에서만 존재

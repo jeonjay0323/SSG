@@ -1,7 +1,7 @@
 # 슥 · 한 줄 극장 — Cloud Run 이미지
 #
-# 빌드 컨텍스트는 services/theater/ 다.
-#   gcloud run deploy ssg-theater --source services/theater ...
+# 빌드 컨텍스트는 01_Product/theater/ 다.
+#   gcloud run deploy ssg-theater --source 01_Product/theater ...
 #
 # ffmpeg 는 apt 로 깔지 않고 imageio-ffmpeg 가 동봉한 바이너리를 쓴다.
 # (체인 프레임 추출용. 이미지가 가벼워지고 빌드도 빨라진다.)

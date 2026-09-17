@@ -26,7 +26,7 @@
 import subprocess
 from pathlib import Path
 
-ROOT = Path(__file__).resolve().parent.parent   # services/theater
+ROOT = Path(__file__).resolve().parent.parent   # 01_Product/theater
 REFS_DIR = ROOT / "static" / "scenes" / "refs"
 MODEL = "gemini-2.5-flash-image"
 REF_LIMIT = 3      # 속도/정확도 균형점 (5장 16.6초 / 3장 11.0초 실측)

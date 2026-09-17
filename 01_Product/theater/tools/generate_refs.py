@@ -18,7 +18,7 @@ import sys
 import time
 from pathlib import Path
 
-ROOT = Path(__file__).resolve().parent.parent   # services/theater
+ROOT = Path(__file__).resolve().parent.parent   # 01_Product/theater
 OUT = ROOT / "static" / "scenes" / "refs"
 ANCHOR = ROOT / "static" / "scenes" / "actor" / "anchor.png"
 

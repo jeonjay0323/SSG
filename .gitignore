@@ -8,10 +8,10 @@ __pycache__/
 .DS_Store
 
 # 파생 프레임 (실행 중 생성)
-services/theater/static/scenes/chain/
+01_Product/theater/static/scenes/chain/
 
 # 작가 스튜디오 데모의 트레일러는 저장소에 포함한다 (*.mp4 예외)
-!archive/studio-demo/assets/trailer.mp4
+!03_Archive/studio-demo/assets/trailer.mp4
 
 # 로컬 전용 대용량 작업물 (저장소에 올리지 않음)
 _local/
