@@ -41,7 +41,8 @@ python3 app/server.py --live --budget 15 # 실제 생성
 | | |
 |---|---|
 | [프로젝트 기획안](02_Docs/plan/프로젝트%20기획안.md) | 서비스 기획 |
-| [전시 기획안](02_Docs/plan/전시%20기획안.md) | 부스 설계 |
+| [한 줄 극장 기획안](02_Docs/plan/한%20줄%20극장%20기획안.md) | **Theater** — 지금 배포된 설치물 |
+| [전시 기획안](02_Docs/plan/전시%20기획안.md) | 이전 전시 구상 (북부대공 빙의 · RFID) |
 | [사업계획서](02_Docs/plan/사업계획서.md) | |
 | `02_Docs/features/` | Reader · Writer 기능 명세 |
 | [작가 인터뷰](02_Docs/research/작가%20인터뷰.md) | **1차 자료** — 서비스 방향을 결정한 인터뷰 |

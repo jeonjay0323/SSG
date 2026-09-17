@@ -145,4 +145,5 @@ gcloud run deploy ssg-theater --source 01_Product/Theater --region us-central1 \
 
 ---
 
-기획 문서는 저장소 루트의 `02_Docs/`, 지난 작업은 `03_Archive/` 에 있다.
+이 설치물의 기획 의도와 설계 근거는 [한 줄 극장 기획안](../../02_Docs/plan/한%20줄%20극장%20기획안.md) 에 있다.
+그 밖 기획 문서는 `02_Docs/`, 지난 작업은 `03_Archive/` 에 있다.
