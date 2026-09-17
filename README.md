@@ -31,7 +31,7 @@ python3 app/server.py --live --budget 15 # 실제 생성
 | [사업계획서](docs/사업계획서.md) | |
 | `docs/features/` | Reader · Writer 기능 명세 |
 | [작가 인터뷰](docs/research/작가%20인터뷰.md) | **1차 자료** — 서비스 방향을 결정한 인터뷰 |
-| [유저 리서치](docs/research/유저%20리서치.md) | 작가·독자 양쪽 정리 + 최대 리스크 |
+| [잠재 사용자 리서치](docs/research/잠재%20사용자%20리서치.md) | 작가·독자 양쪽 정리 + 최대 리스크 |
 | [시장 조사](docs/research/시장%20조사.md) | 웹소설 1.35조 · 숏폼 드라마 17→38조 |
 | `docs/research/` | 그 밖 — 유저 반응 · 유사 서비스 · 표지 영향 · 제작 파이프라인 |
 
