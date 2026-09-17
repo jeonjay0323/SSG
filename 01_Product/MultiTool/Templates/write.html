@@ -31,7 +31,8 @@
   body{
     background:var(--surface);color:var(--chacole);
     font-family:'Pretendard',-apple-system,sans-serif;font-size:14px;line-height:1.7;
-    padding:calc(env(safe-area-inset-top) + 18px) 18px calc(env(safe-area-inset-bottom) + 24px);
+    /* 아래 여백은 토스트(bottom:32px) 가 마지막 요소를 덮지 않을 만큼 둔다 */
+    padding:calc(env(safe-area-inset-top) + 18px) 18px calc(env(safe-area-inset-bottom) + 84px);
     display:flex;flex-direction:column;gap:16px;
     -webkit-user-select:none;user-select:none;
     max-width:480px;margin:0 auto;
@@ -105,6 +106,13 @@
   .btn:hover{opacity:.7}
   .btn[disabled]{background:var(--outline-light);border-color:var(--outline-light);
                  color:var(--dust);cursor:default;opacity:1}
+
+  /* 보조 버튼 — 주 동선(이야기 카드)과 경쟁하지 않게 외곽선만 */
+  .btn.sub-btn{
+    background:transparent;color:var(--on-surface);
+    border:1px solid var(--outline-light);
+  }
+  .btn.sub-btn:hover{opacity:.7}
 
   /* ── 시나리오 선택 ── */
   .scen{
@@ -180,6 +188,7 @@
   <h2 id="inviteText" style="margin-bottom:4px">문장을 고르고, 이야기를 이어 만들어볼까요?</h2>
   <div class="sub" style="margin-bottom:16px">하나를 고르면 그 이야기가 시작됩니다.</div>
   <div id="scenarios"></div>
+  <button id="btnOwn" class="btn sub-btn" style="margin-top:4px">직접 이야기 시작하기</button>
 </section>
 
 <!-- 닉네임 -->
@@ -368,6 +377,14 @@ function renderScenarios(st){
     el.onclick = () => { joinTrack(el.dataset.id); scenariosDrawn = false; };
   });
 }
+// 아직 기능이 없다. 눌리는지만 본다 — 직접 만들고 싶다는 수요의 신호.
+$('#btnOwn').onclick = () => {
+  ownTaps++;
+  console.log('[own-story] tap', ownTaps);
+  toast('준비 중입니다');
+};
+let ownTaps = 0;
+
 function toast(msg){
   const t = $('#toast'); t.textContent = msg; t.classList.add('on');
   clearTimeout(t._h); t._h = setTimeout(()=>t.classList.remove('on'), 2200);
