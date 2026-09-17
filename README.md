@@ -4,31 +4,45 @@
 
 ```
 01_Product/
-  theater/      슥 · 한 줄 극장 — 졸업전시 부스 설치물 (배포 중)
+  Theater/      슥 · 한 줄 극장 — 졸업전시 부스 설치물 (배포 중)
+  Studio/       슥 스튜디오 — 원고에서 영상까지, 작가용 제작 도구
 02_Docs/        기획 · 리서치 · 기능 명세
-03_Archive/     지난 작업 (작가 스튜디오 데모 · 소설 · 진행 기록)
+03_Archive/     지난 기록
 ```
 
-## 01_Product/theater — 슥 · 한 줄 극장
+## 01_Product/Theater — 슥 · 한 줄 극장
 
 관람객이 폰으로 **한 문장**을 보내면 그 문장이 영상 장면이 되고,
 장면들이 이어져 하나의 웹드라마가 된다. 세 이야기가 동시에 굴러간다.
 
 ```bash
-cd 01_Product/theater
+cd 01_Product/Theater
 python3 app/server.py                    # 드라이런 (생성 호출 없음, 무료)
 python3 app/server.py --live --budget 15 # 실제 생성
 ```
 
-자세한 설계와 배포는 [01_Product/theater/README.md](01_Product/theater/README.md).
+자세한 설계와 배포는 [01_Product/Theater/README.md](01_Product/Theater/README.md).
+
+## 01_Product/Studio — 슥 스튜디오
+
+원고를 넣으면 등장인물을 캐스팅하고 장면을 영상으로 만드는 작가용 도구.
+인터랙티브 프로토타입이라 빌드 없이 `index.html` 을 열면 실행된다.
+
+| 화면 | 역할 |
+|---|---|
+| write | 원고 작성 — 인물·감정·장소 실시간 강조 |
+| 분석 | 원고를 읽으며 인물 카드가 타이핑 → 플립 |
+| casting | 추출된 배우 카드 — 키워드 · 프롬프트 · 보이스 |
+| video | 씬 패널 + 프리뷰 + 썸네일 7씬 |
+| preview | 완성 영상 팝업 |
 
 ## 02_Docs
 
 | | |
 |---|---|
-| [프로젝트 기획안](02_Docs/프로젝트%20기획안.md) | 서비스 기획 |
-| [전시 기획안](02_Docs/전시%20기획안.md) | 부스 설계 |
-| [사업계획서](02_Docs/사업계획서.md) | |
+| [프로젝트 기획안](02_Docs/plan/프로젝트%20기획안.md) | 서비스 기획 |
+| [전시 기획안](02_Docs/plan/전시%20기획안.md) | 부스 설계 |
+| [사업계획서](02_Docs/plan/사업계획서.md) | |
 | `02_Docs/features/` | Reader · Writer 기능 명세 |
 | [작가 인터뷰](02_Docs/research/작가%20인터뷰.md) | **1차 자료** — 서비스 방향을 결정한 인터뷰 |
 | [잠재 사용자 리서치](02_Docs/research/잠재%20사용자%20리서치.md) | 작가·독자 양쪽 정리 + 최대 리스크 |
@@ -39,8 +53,7 @@ python3 app/server.py --live --budget 15 # 실제 생성
 
 | | |
 |---|---|
-| `03_Archive/studio-demo/` | 작가 스튜디오 데모 — 원고 → 캐스팅 → 영상화 프로토타입. `index.html` 을 열면 실행된다 |
-| `03_Archive/novel/` `03_Archive/drama/` | 자체 IP 「왕이었는데 아이돌로 환생했다」 |
+| `03_Archive/drama/novel/` | 자체 IP 「왕이었는데 아이돌로 환생했다」 샘플 원고 |
 | `03_Archive/progress/` | 진행 기록 |
 
 ---

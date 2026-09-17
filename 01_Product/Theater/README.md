@@ -98,9 +98,9 @@ standard 티어 + 8초에서만 동작한다. 그래서 인물 고정은 Veo 가
 ## 실행
 
 ```bash
-pip install -r 01_Product/theater/requirements.txt
+pip install -r 01_Product/Theater/requirements.txt
 
-cd 01_Product/theater
+cd 01_Product/Theater
 python3 app/server.py                          # 드라이런 (생성 호출 없음, 무료)
 python3 app/server.py --live --budget 15       # 실제 생성 · 누적 $15 에서 자동 드라이런 전환
 python3 app/server.py --live --fast            # 라운드를 짧게 (테스트용)
@@ -115,7 +115,7 @@ python3 app/server.py --live --fast            # 라운드를 짧게 (테스트�
 
 ```bash
 # 저장소 루트에서 실행한다
-gcloud run deploy ssg-theater --source 01_Product/theater --region us-central1 \
+gcloud run deploy ssg-theater --source 01_Product/Theater --region us-central1 \
   --allow-unauthenticated --no-cpu-throttling \
   --min-instances 1 --max-instances 1 --memory 2Gi --cpu 2 --timeout 3600 \
   --set-env-vars "SSG_LIVE=1,SSG_BUDGET=15,SSG_BUCKET=<버킷>,GOOGLE_CLOUD_PROJECT=<프로젝트>"
