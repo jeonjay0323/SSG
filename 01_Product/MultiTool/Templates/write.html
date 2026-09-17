@@ -138,6 +138,20 @@
     content:'+';font-size:15px;line-height:1;color:var(--violet);flex:none;
   }
 
+  /* 대기 중 다른 이야기로 넘어가기 */
+  .others{margin-top:22px}
+  .others .cap{font-size:12px;color:var(--dust);margin-bottom:8px;text-align:center}
+  .orow{
+    width:100%;display:flex;align-items:center;gap:10px;
+    padding:13px 14px;margin-bottom:8px;border-radius:4px;
+    border:1px solid var(--outline-light);background:var(--surface-container);
+    text-align:left;transition:opacity .15s;
+  }
+  .orow:hover{opacity:.75}
+  .orow .t{font-family:var(--brand);font-weight:700;font-size:15px;color:var(--on-surface);flex:none}
+  .orow .s{font-size:12px;color:var(--dust);flex:1}
+  .orow .go{font-size:13px;color:var(--violet-text);flex:none}
+
   /* ── 시나리오 선택 ── */
   .scen{
     border:1px solid var(--outline-light);border-radius:4px;overflow:hidden;
@@ -257,6 +271,10 @@
     <span class="em">보냈습니다</span>
     큰 화면 아래쪽에<br>방금 보낸 문장이 떠 있습니다.
     <div style="margin-top:18px;font-size:13px" id="waitCount"></div>
+  </div>
+  <div class="others" id="others" hidden>
+    <div class="cap">기다리는 동안, 다른 이야기도 이어보세요</div>
+    <div id="othersList"></div>
   </div>
 </section>
 
@@ -546,6 +564,26 @@ function joinTrack(sid){
   sessionStorage.removeItem('sk_nick_asked');
 }
 
+// 대기 화면에서 다른 이야기로 건너뛰게 한다.
+// 기다림을 다음 참여로 바꾸는 자리다.
+function drawOthers(tracks){
+  const box = $('#others');
+  const rest = (tracks || []).filter(t => t.id !== myTrack);
+  if(!rest.length){ box.hidden = true; return; }
+  box.hidden = false;
+  const label = {idle:'기다리는 중', collect:'접수 중', generate:'만드는 중',
+                 vote:'투표 중', reveal:'발표 중', finale:'완결'};
+  $('#othersList').innerHTML = rest.map(t => `
+    <button class="orow" data-id="${t.id}">
+      <span class="t">${t.title}</span>
+      <span class="s">${label[t.phase] || t.phase} · ${(t.canon||[]).length}컷</span>
+      <span class="go">이어쓰기 →</span>
+    </button>`).join('');
+  $('#othersList').querySelectorAll('.orow').forEach(el => {
+    el.onclick = () => { joinTrack(el.dataset.id); box.hidden = true; };
+  });
+}
+
 async function tick(){
   try{
     // story 를 한 번만 읽으면 배포 후에도 옛 시나리오가 계속 보인다
@@ -625,6 +663,7 @@ async function tick(){
         $('#waitCount').textContent = t.poolCount > 1
           ? `${t.poolCount}명이 참여했습니다 · 곧 투표가 열립니다`
           : '다른 분이 참여하면 투표가 열립니다';
+        drawOthers(st.tracks);
       } else {
         show('vSubmit');
         $('#poolNote').textContent = t.phase === 'idle'

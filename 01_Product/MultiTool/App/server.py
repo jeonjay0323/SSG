@@ -408,9 +408,40 @@ def staged_start_frame(eng, tr, cand, prog):
         return base, None
 
 
+def preset_clip(tr, text):
+    """미리 만들어 둔 1씬 클립이 있으면 그 이름을 돌려준다.
+
+    1씬만 가능하다. 시작 프레임이 시나리오의 seed 로 고정돼 있기 때문이다.
+    2씬부터는 앞 라운드에서 무엇이 뽑혔는지에 따라 시작 프레임이 달라진다.
+    Tools/build_presets.py 와 이름 규칙이 같아야 한다.
+    """
+    with tr.lock:
+        if tr.canon:
+            return None
+    sents = (tr.scenario.get("suggest") or {}).get("sentences") or []
+    t = (text or "").strip()
+    for i, s in enumerate(sents):
+        if s.strip() == t:
+            name = f"preset_{tr.sid}_{i}.mp4"
+            return name if storage.clip_size(name) is not None else None
+    return None
+
+
 def make_candidate_video(eng, tr, cand):
     gen = tr.scenario["generation"]
     do_live = eng.can_generate()
+
+    # 프리셋을 그대로 골랐고 1씬이면 미리 만들어 둔 클립을 쓴다.
+    # 첫 접촉에서 기다림을 없애려고 둔 길이다. 생성비도 들지 않는다.
+    ready = preset_clip(tr, cand["text"])
+    if ready:
+        with tr.lock:
+            cand["video"] = "/clips/" + ready
+            cand["shot"] = "프리셋"
+            cand["progress"] = "완료"
+            cand["status"] = "ready"        # 반드시 마지막
+        print(f"  [{tr.sid}] 프리셋 사용 — {ready}", flush=True)
+        return
 
     def prog(m):
         with tr.lock:
