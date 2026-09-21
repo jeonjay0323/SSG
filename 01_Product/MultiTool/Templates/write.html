@@ -373,7 +373,7 @@ const $ = s => document.querySelector(s);
 const POLL = 1000;
 
 /* 참여자 식별 — 중복 제출·중복 투표를 막는 용도.
-   완벽한 방어는 아니지만 전시장에서는 충분하다. */
+   완벽한 방어는 아니지만 현장에서는 충분하다. */
 const voter = (() => {
   let v = localStorage.getItem('sk_voter');
   if(!v){ v = 'v_' + Math.random().toString(36).slice(2,11); localStorage.setItem('sk_voter', v); }
@@ -404,7 +404,7 @@ function show(id){
    이야기를 고른 뒤 한 번만 묻는다. 큰 화면에 문장과 함께 뜨기 때문에
    "내 문장이 저기 있다"를 알아보게 하는 장치다. 건너뛸 수 있다. */
 /* 이름은 기억하되(다음에 자동으로 채워준다), "물어봤다"는 사실은 기억하지 않는다.
-   전시에서는 이야기를 새로 고를 때마다 새 사람일 수 있다 — 매번 물어야 한다.
+   한 기기를 여러 사람이 돌려 쓰면 새 사람일 수 있다 — 매번 물어야 한다.
    다만 화면이 잠겼다 돌아온 경우까지 다시 묻지는 않으려고
    sessionStorage 를 쓴다(탭이 살아 있는 동안만 유지). */
 let nick = localStorage.getItem('sk_nick') || '';
@@ -620,7 +620,7 @@ $('#send').addEventListener('click', async () => {
 });
 
 /* ── 처음으로 ──
-   전시에서 실수로 이야기가 날아가면 곤란하므로 두 번 눌러야 실행된다. */
+   실수로 이야기가 날아가면 곤란하므로 두 번 눌러야 실행된다. */
 
 
 /* ── 투표 ── */

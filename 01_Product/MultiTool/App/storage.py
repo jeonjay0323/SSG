@@ -119,7 +119,7 @@ def clear_state():
 
 
 # ── 이벤트 로그 ──
-# 전시에서 무엇이 눌렸는지 남긴다. 한 줄에 하나(JSONL).
+# 무엇이 눌렸는지 남긴다. 한 줄에 하나(JSONL).
 # 버킷이 있으면 통째로 올린다 — 붙여쓰기가 안 되는 대신 파일이 하나로 남는다.
 EVENTS = Path(os.environ.get("SSG_EVENTS", str(LOCAL_STATE / "events.jsonl")))
 

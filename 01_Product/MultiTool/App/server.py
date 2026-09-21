@@ -41,7 +41,7 @@ from pathlib import Path
 
 ROOT = Path(__file__).resolve().parent.parent   # 01_Product/MultiTool
 ACTORS_DIR = Path.home() / "Desktop" / "SSG" / "09_Actors"
-SCENES_DIR = ROOT / "Static" / "scenes"          # 전시 전용 도입부 이미지 (이미지에 동봉)
+SCENES_DIR = ROOT / "Static" / "scenes"          # 도입부 이미지 (컨테이너에 동봉)
 if ACTORS_DIR.exists():               # 로컬 개발에서만 존재
     sys.path.insert(0, str(ACTORS_DIR))
 
@@ -575,7 +575,7 @@ def make_candidate_video(eng, tr, cand):
 # ─────────────────────────────────────────────────────────────
 # 입력 필터
 #
-# 전시는 무인 운영이고, 관람객 문장은 대형 화면에 그대로 자막으로 뜬다.
+# 무인으로 돌아가고, 참여자 문장은 화면에 그대로 자막으로 뜬다.
 # Veo 자체 안전 필터는 '영상 생성'만 막을 뿐 문장 노출은 못 막는다.
 # 접수 시점에 걸러야 화면에 아예 안 뜬다.
 # ─────────────────────────────────────────────────────────────
@@ -656,7 +656,7 @@ def screen_text(text):
 def save_snapshot(eng):
     """확정된 이야기를 디스크에 남긴다.
 
-    전시 중 서버가 한 번 죽으면 그날 쌓인 이야기가 통째로 사라진다.
+    운영 중 서버가 한 번 죽으면 그날 쌓인 이야기가 통째로 사라진다.
     라운드가 확정될 때마다 저장하고, 기동 시 읽어와 이어간다.
     임시 파일에 쓰고 교체 — 쓰는 도중 죽어도 기존 스냅샷이 살아남는다.
     """

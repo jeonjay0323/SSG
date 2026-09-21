@@ -1,13 +1,22 @@
-{"t": 1.0, "voter": "probe", "e": "screen", "p": {"view": "vChoose"}}
-{"t": 1789963681.145, "voter": "probe", "e": "cta_write", "p": {"sid": "isekai"}}
-{"t": 1789963726.963, "voter": "v_hfwxnoh0a", "e": "screen", "p": {"view": "vChoose"}}
-{"t": 1789963734.239, "voter": "v_hfwxnoh0a", "e": "tab", "p": {"tab": "mine"}}
-{"t": 1789963734.25, "voter": "v_hfwxnoh0a", "e": "screen", "p": {"view": "vMine"}}
-{"t": 1789963736.238, "voter": "v_hfwxnoh0a", "e": "tab", "p": {"tab": "gallery"}}
-{"t": 1789963736.24, "voter": "v_hfwxnoh0a", "e": "seg", "p": {"seg": "made"}}
-{"t": 1789963736.242, "voter": "v_hfwxnoh0a", "e": "seg", "p": {"seg": "original"}}
-{"t": 1789963736.262, "voter": "v_hfwxnoh0a", "e": "screen", "p": {"view": "vChoose"}}
-{"t": 1789963757.238, "voter": "v_hfwxnoh0a", "e": "random_popup", "p": {}}
-{"t": 1789963851.238, "voter": "v_hfwxnoh0a", "e": "random_popup", "p": {}}
-{"t": 1789963910.966, "voter": "v_hfwxnoh0a", "e": "screen", "p": {"view": "vChoose"}}
-{"t": 1789963941.242, "voter": "v_hfwxnoh0a", "e": "random_popup", "p": {}}
+{"t": 1790012923.628, "voter": "v_hfwxnoh0a", "e": "screen", "p": {"view": "vChoose"}}
+{"t": 1790012929.859, "voter": "v_nehxdded0", "e": "screen", "p": {"view": "vChoose"}}
+{"t": 1790012945.129, "voter": "v_nehxdded0", "e": "share_open", "p": {"where": "home"}}
+{"t": 1790012946.793, "voter": "v_nehxdded0", "e": "open_story", "p": {"sid": "isekai", "from": "card"}}
+{"t": 1790012946.824, "voter": "v_nehxdded0", "e": "screen", "p": {"view": "vDetail"}}
+{"t": 1790012948.787, "voter": "v_nehxdded0", "e": "viewer_open", "p": {"sid": "isekai"}}
+{"t": 1790012949.792, "voter": "v_nehxdded0", "e": "share_open", "p": {"where": "detail", "sid": "isekai"}}
+{"t": 1790012964.922, "voter": "v_nehxdded0", "e": "cta_write", "p": {"sid": "isekai"}}
+{"t": 1790012966.791, "voter": "v_nehxdded0", "e": "screen", "p": {"view": "vNick"}}
+{"t": 1790012970.839, "voter": "v_nehxdded0", "e": "submit_ok", "p": {"sid": "isekai", "len": 18, "dialogue": true, "coin": false}}
+{"t": 1790012970.84, "voter": "v_nehxdded0", "e": "screen", "p": {"view": "vChoose"}}
+{"t": 1790012986.309, "voter": "v_nehxdded0", "e": "reward_pick", "p": {"pick": "room", "sid": null}}
+{"t": 1790012988.802, "voter": "v_nehxdded0", "e": "screen", "p": {"view": "vDetail"}}
+{"t": 1790012989.786, "voter": "v_nehxdded0", "e": "cta_write", "p": {"sid": "isekai"}}
+{"t": 1790012990.792, "voter": "v_nehxdded0", "e": "screen", "p": {"view": "vNick"}}
+{"t": 1790012992.799, "voter": "v_nehxdded0", "e": "screen", "p": {"view": "vChoose"}}
+{"t": 1790012994.786, "voter": "v_nehxdded0", "e": "random_popup", "p": {}}
+{"t": 1790012995.796, "voter": "v_nehxdded0", "e": "random_spin", "p": {"sid": "isekai"}}
+{"t": 1790013015.793, "voter": "v_nehxdded0", "e": "screen", "p": {"view": "vNick"}}
+{"t": 1790013017.788, "voter": "v_nehxdded0", "e": "coin_buy_tap", "p": {}}
+{"t": 1790013020.786, "voter": "v_nehxdded0", "e": "coin_use", "p": {"sid": "isekai", "left": 2}}
+{"t": 1790013024.787, "voter": "v_nehxdded0", "e": "submit_blocked", "p": {"sid": "isekai", "by": "client"}}

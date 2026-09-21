@@ -308,7 +308,7 @@ def generate_clip(img_path, tier="lite", seconds=8, motion="slow_push",
             )
 
             # 폴링 간격이 길면 완성 후에도 그만큼 놀게 된다.
-            # 전시는 대기 시간이 곧 이탈이라 촘촘하게 본다.
+            # 대기 시간이 곧 이탈이라 촘촘하게 본다.
             waited = 0
             while not op.done:
                 time.sleep(3)
