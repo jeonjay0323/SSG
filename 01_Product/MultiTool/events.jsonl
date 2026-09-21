@@ -1,0 +1,13 @@
+{"t": 1.0, "voter": "probe", "e": "screen", "p": {"view": "vChoose"}}
+{"t": 1789963681.145, "voter": "probe", "e": "cta_write", "p": {"sid": "isekai"}}
+{"t": 1789963726.963, "voter": "v_hfwxnoh0a", "e": "screen", "p": {"view": "vChoose"}}
+{"t": 1789963734.239, "voter": "v_hfwxnoh0a", "e": "tab", "p": {"tab": "mine"}}
+{"t": 1789963734.25, "voter": "v_hfwxnoh0a", "e": "screen", "p": {"view": "vMine"}}
+{"t": 1789963736.238, "voter": "v_hfwxnoh0a", "e": "tab", "p": {"tab": "gallery"}}
+{"t": 1789963736.24, "voter": "v_hfwxnoh0a", "e": "seg", "p": {"seg": "made"}}
+{"t": 1789963736.242, "voter": "v_hfwxnoh0a", "e": "seg", "p": {"seg": "original"}}
+{"t": 1789963736.262, "voter": "v_hfwxnoh0a", "e": "screen", "p": {"view": "vChoose"}}
+{"t": 1789963757.238, "voter": "v_hfwxnoh0a", "e": "random_popup", "p": {}}
+{"t": 1789963851.238, "voter": "v_hfwxnoh0a", "e": "random_popup", "p": {}}
+{"t": 1789963910.966, "voter": "v_hfwxnoh0a", "e": "screen", "p": {"view": "vChoose"}}
+{"t": 1789963941.242, "voter": "v_hfwxnoh0a", "e": "random_popup", "p": {}}

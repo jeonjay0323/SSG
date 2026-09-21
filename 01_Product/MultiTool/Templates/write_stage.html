@@ -1475,7 +1475,10 @@
   #dVote{margin-bottom:20px}
 
 
-  /* ── 전체 화면 보기 ──
+  
+
+
+/* ── 전체 화면 보기 ──
      상영창을 누르면 열린다. 여기서만 소리가 난다 —
      자동재생은 음소거여야 시작되므로, 소리는 사람이 누른 뒤에 켠다. */
   #viewer{
@@ -1914,7 +1917,9 @@ const VIEWS = ['vChoose','vMine','vNoti','vMe','vNick','vDetail','vSubmit',
 // 탭은 스토리에 들어가 있지 않을 때만 보인다. 참여 중에는 흐름에 집중시킨다.
 const TAB_VIEWS = {gallery:'vChoose', mine:'vMine', noti:'vNoti', me:'vMe'};
 
+let lastView = null;
 function show(id){
+  if(id !== lastView){ lastView = id; track('screen', {view: id}); }
   VIEWS.forEach(v => $('#'+v).classList.toggle('hide', v !== id));
   const onTab = Object.values(TAB_VIEWS).includes(id);
   $('#tabs').classList.toggle('hide', !onTab);
@@ -1973,6 +1978,7 @@ function renderDetail(st){
 
 $('#ctaWrite')?.addEventListener('click', () => {
   if(!detailId) return;
+  track('cta_write', {sid: detailId});
   joinTrack(detailId);
   detailId = null;
 });
@@ -2056,6 +2062,7 @@ function markJoined(sid){
 
 let tab = 'gallery';
 function setTab(name){
+  if(name !== tab) track('tab', {tab: name});
   tab = name;
   $('#tabs').querySelectorAll('button')
     .forEach(b => b.classList.toggle('on', b.dataset.tab === name));
@@ -2070,6 +2077,7 @@ const MAX_WRITERS = 4;
 let seg = 'original';
 function setSeg(name){
   const moved = seg !== name;
+  if(moved) track('seg', {seg: name});
   seg = name;
   $('#vChoose').querySelectorAll('.seg')
     .forEach(b => b.classList.toggle('on', b.dataset.seg === name));
@@ -2141,6 +2149,7 @@ function fmtLeft(ms){
 let useCoin = false;          // 다음 제출에 코인을 쓴다
 $('#coinUse').addEventListener('click', () => {
   if(coins <= 0) return;
+  track('coin_use', {sid: myTrack, left: coins - 1});
   setCoins(coins - 1);
   useCoin = true;
   delete rest[myTrack];
@@ -2150,6 +2159,7 @@ $('#coinUse').addEventListener('click', () => {
   toast('코인을 썼어요 · 바로 쓸 수 있어요');
 });
 $('#coinBuy').addEventListener('click', () => {
+  track('coin_buy_tap');
   closeRest();
   toast('충전은 준비 중이에요');
   setTimeout(showShareTip, 320);
@@ -2170,7 +2180,7 @@ document.querySelectorAll('.reward-opt').forEach(b => b.onclick = () => {
     log.push({pick, at: new Date().toISOString(), track: myTrack});
     localStorage.setItem('sk_rewards', JSON.stringify(log));
   }catch(e){}
-  console.log('[reward]', pick, myTrack);
+  track('reward_pick', {pick, sid: myTrack});
   $('#rewardWrap').classList.add('hide');
   // 팝업이 사라진 뒤에 띄운다 — 겹치면 무엇이 바뀌었는지 안 보인다
   setTimeout(() => toast({room:'비밀방을 열었어요', nominate:'후보로 올렸어요',
@@ -2189,6 +2199,7 @@ function popOpen(){
   // 갤러리가 실제로 떠 있을 때만. 이름 정하기·쓰기 화면 위에 겹쳐 뜨면 안 된다.
   if($('#vChoose').classList.contains('hide')) return;
   if(document.body.classList.contains('guide-open')) return;
+  track('random_popup');
   $('#popWrap').classList.remove('hide');
 }
 function popClose(){
@@ -2265,6 +2276,7 @@ $('#popRandom').addEventListener('click', () => {
   const fresh = list.filter(sc => !(lastTracks.find(t => t.id === sc.id)?.canon || []).length);
   const pool = fresh.length ? fresh : list;
   const pick = pool[Math.floor(Math.random() * pool.length)];
+  track('random_spin', {sid: pick.id});
 
   // 굴릴 칸: 전체 목록을 몇 바퀴 돌린 뒤 마지막에 당첨된 스토리를 놓는다
   const strip = [];
@@ -2395,7 +2407,7 @@ function renderScenarios(st){
       </div>`;
     }).join('');
     $('#scenarios').querySelectorAll('.scen').forEach(el => {
-      el.onclick = () => { detailId = el.dataset.id; };
+      el.onclick = () => { detailId = el.dataset.id; track('open_story', {sid: el.dataset.id, from: 'card'}); };
     });
   }
   paintCards(state);
@@ -2599,6 +2611,7 @@ function drawAid(sc){
   bs.onclick = () => {
     ta.value = sent; ta.dispatchEvent(new Event('input'));
     if(!aidUsed.includes('sentence')) aidUsed.push('sentence');
+    track('hint', {kind: 'sentence'});
     ta.focus();
   };
 
@@ -2610,6 +2623,7 @@ function drawAid(sc){
       ta.value = (ta.value.trim() + ' ' + k).trim();
       ta.dispatchEvent(new Event('input'));
       if(!aidUsed.includes('keyword')) aidUsed.push('keyword');
+      track('hint', {kind: 'keyword'});
       ta.focus();
     };
   });
@@ -2661,7 +2675,7 @@ $('#send').addEventListener('click', async () => {
   if(sending) return;
   lastSentText = ta.value.trim();
   const why = localBlock(ta.value.trim());
-  if(why){ showErr(why); return; }
+  if(why){ track('submit_blocked', {sid: myTrack, by: 'client'}); showErr(why); return; }
   clearErr();
   sending = true;
   $('#send').disabled = true;
@@ -2677,6 +2691,7 @@ $('#send').addEventListener('click', async () => {
       useCoin = false;
       if(res.count === 1) setTimeout(openReward, 400);   // 이 라운드의 첫 문장
       lastRound = submittedRound;
+      track('submit_ok', {sid: myTrack, len: lastSentText.length, dialogue: /["\u201c\u300c']/.test(lastSentText), coin: useCoin});
       markJoined(myTrack);
       keepMine(myTrack, res.text || lastSentText);
       ta.value = ''; $('#count').textContent = `0 / ${maxChars}`;
@@ -2690,6 +2705,7 @@ $('#send').addEventListener('click', async () => {
       toast('문장을 보냈어요', '더보기', () => { detailId = sent; });
     } else {
       // 서버가 막은 경우 — 문장은 그대로 두고 왜 막혔는지만 알린다
+      track('submit_blocked', {sid: myTrack, by: 'server'});
       showErr(res.message || '보내지 못했어요');
       $('#send').disabled = false;
     }
@@ -2724,7 +2740,7 @@ function renderCands(st, sel = '#cands'){
   $(sel).querySelectorAll('.cand').forEach(el => {
     el.onclick = async () => {
       const res = await post('/api/vote', {scenarioId: st.id, candidateId: el.dataset.id});
-      if(res.ok){ myVote = el.dataset.id; toast(res.message); }
+      if(res.ok){ myVote = el.dataset.id; track('vote', {sid: st.id}); toast(res.message); }
       else toast(res.message);
     };
   });
@@ -2807,6 +2823,7 @@ function openViewer(){
   $('#vwCap').innerHTML = sc.line
     ? `<span>${sc.nick ? esc(sc.nick) + ' ' : ''}「${esc(sc.line)}」</span>`
     : '';
+  track('viewer_open', {sid: detailId || myTrack});
   $('#viewer').classList.remove('hide');
   v.play().catch(() => {
     // 소리를 켠 채로 막히면 음소거로라도 튼다
@@ -2833,6 +2850,34 @@ document.addEventListener('click', e => {
   // 상영창을 누르면 전체 화면
   if(e.target.closest('.mbox')) openViewer();
 }, true);
+
+/* ── 트래킹 ──
+   무엇이 눌렸는지만 남긴다. 문장 내용은 보내지 않는다(서버에 이미 있다).
+   모았다가 한꺼번에 보내고, 화면을 닫을 때도 남은 것을 흘려보낸다. */
+let evq = [];
+let evTimer = null;
+function track(e, p = {}){
+  evq.push({e, p, t: Date.now() / 1000});
+  if(evq.length >= 12) return flushEvents();
+  clearTimeout(evTimer);
+  evTimer = setTimeout(flushEvents, 4000);
+}
+function flushEvents(){
+  if(!evq.length) return;
+  const body = JSON.stringify({voter, events: evq});
+  evq = [];
+  clearTimeout(evTimer);
+  try{
+    if(navigator.sendBeacon){
+      navigator.sendBeacon('/api/track', new Blob([body], {type: 'application/json'}));
+      return;
+    }
+  }catch(e){}
+  fetch('/api/track', {method:'POST', headers:{'Content-Type':'application/json'},
+                       body, keepalive:true}).catch(()=>{});
+}
+addEventListener('pagehide', flushEvents);
+addEventListener('visibilitychange', () => { if(document.hidden) flushEvents(); });
 
 /* ── 알림 ──
    내가 참여한 스토리에서 일어난 일만 모은다.
@@ -3177,6 +3222,7 @@ $('#inviteShare').addEventListener('click', async () => {
 /* 공유하면 코인 10개. 끝없이 주면 의미가 없어 세 번까지만 */
 const SHARE_COINS = 10;
 function rewardShare(msg){
+  track('share_done');
   const got = Number(localStorage.getItem('sk_share_coins') || 0);
   if(got >= 3){ if(msg) toast(msg); return; }
   localStorage.setItem('sk_share_coins', String(got + 1));
@@ -3191,9 +3237,11 @@ $('#shareBtn').addEventListener('click', async () => {
   if(detailId){
     const sc = (story?.scenarios || []).find(x => x.id === detailId);
     $('#inviteTitle').textContent = sc ? `〈${sc.title}〉` : '이 스토리';
+    track('share_open', {where: 'detail', sid: detailId});
     $('#inviteWrap').classList.remove('hide');
     return;
   }
+  track('share_open', {where: 'home'});
   $('#shareWrap').classList.remove('hide');
 });
 

@@ -116,3 +116,33 @@ def clear_state():
             b.delete()
     else:
         (LOCAL_STATE / "canon.json").unlink(missing_ok=True)
+
+
+# ── 이벤트 로그 ──
+# 전시에서 무엇이 눌렸는지 남긴다. 한 줄에 하나(JSONL).
+# 버킷이 있으면 통째로 올린다 — 붙여쓰기가 안 되는 대신 파일이 하나로 남는다.
+EVENTS = Path(os.environ.get("SSG_EVENTS", str(LOCAL_STATE / "events.jsonl")))
+
+
+def append_events(lines):
+    """JSON 문자열 여러 줄을 덧붙인다. 실패해도 조용히 넘어간다."""
+    if not lines:
+        return
+    try:
+        EVENTS.parent.mkdir(parents=True, exist_ok=True)
+        with EVENTS.open("a", encoding="utf-8") as f:
+            for ln in lines:
+                f.write(ln + "\n")
+        if BUCKET:
+            _bucket().blob("events.jsonl").upload_from_string(
+                EVENTS.read_text(encoding="utf-8"),
+                content_type="application/x-ndjson; charset=utf-8")
+    except Exception:
+        pass
+
+
+def read_events():
+    try:
+        return EVENTS.read_text(encoding="utf-8")
+    except Exception:
+        return ""

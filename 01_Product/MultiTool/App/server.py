@@ -928,6 +928,13 @@ class Handler(BaseHTTPRequestHandler):
             return self._file(ROOT / "Templates" / "stage.html", "text/html; charset=utf-8")
         if p == "/api/round":
             return self._send(200, ENGINE.snapshot())
+        if p == "/api/events":
+            data = storage.read_events().encode("utf-8")
+            self.send_response(200)
+            self.send_header("Content-Type", "application/x-ndjson; charset=utf-8")
+            self.send_header("Content-Length", str(len(data)))
+            self.end_headers()
+            return self.wfile.write(data)
         if p == "/api/story":
             return self._send(200, load_story())
         if p.startswith("/staged/"):
@@ -984,6 +991,25 @@ class Handler(BaseHTTPRequestHandler):
                                     "message": "접수됐습니다" if ok else res,
                                     "count": len(tr.pool) if ok else None,
                                     "round": tr.round_n})
+        if self.path == "/api/track":
+            # 화면에서 보낸 이벤트를 한 줄씩 남긴다. 판단하지 않고 그대로 적는다.
+            evs = body.get("events") or []
+            voter = str(body.get("voter", ""))[:40]
+            now = time.time()
+            lines = []
+            for e in evs[:50]:
+                try:
+                    lines.append(json.dumps({
+                        "t": round(float(e.get("t", now)), 3),
+                        "voter": voter,
+                        "e": str(e.get("e", ""))[:60],
+                        "p": e.get("p") if isinstance(e.get("p"), dict) else {},
+                    }, ensure_ascii=False))
+                except Exception:
+                    continue
+            storage.append_events(lines)
+            return self._send(200, {"ok": True, "n": len(lines)})
+
         if self.path == "/api/reset":
             # scenarioId 를 주면 그 이야기만, 없으면 전부 처음으로
             targets = [tr] if tr else list(ENGINE.tracks.values())
