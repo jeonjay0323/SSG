@@ -1509,6 +1509,25 @@
   }
   .mbox{cursor:pointer}
 
+
+  /* 하단 탭 — 아이콘 위, 글자 아래.
+     알림 배지를 달면서 .ico 가 inline-block 이 되어 글자가 옆으로 붙었다.
+     세로 정렬을 버튼 쪽에서 잡아 두면 화면이 낮아져도 구겨지지 않는다. */
+  #tabs button{
+    display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;
+    padding:14px 4px 16px;
+  }
+  #tabs button .ico{
+    position:relative;display:block;line-height:0;margin:0;
+  }
+  #tabs button span,#tabs button{white-space:nowrap}
+
+  /* 화면이 낮으면 탭도 얇게 */
+  @media (max-height: 560px){
+    #tabs button{padding:8px 4px 10px;gap:2px}
+    body.has-tabs{padding-bottom:calc(env(safe-area-inset-bottom) + 88px)}
+  }
+
   .hide{display:none !important}
 </style>
 </head>
