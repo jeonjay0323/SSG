@@ -174,7 +174,7 @@ IDENTITY_LOCK = (
 )
 
 
-def build_prompt(motion_key, extra=None, beat=None, has_refs=False, world=None):
+def build_prompt(motion_key, extra=None, beat=None, has_refs=False, world=None, line=None):
     """beat = 관람객이 쓴 문장. 주어지면 프롬프트 맨 앞에 최우선 지시로 놓는다.
 
     뒤에 붙이면 카메라 지시와 정체성 고정에 묻혀 무시된다 —
@@ -190,6 +190,16 @@ def build_prompt(motion_key, extra=None, beat=None, has_refs=False, world=None):
             "NEVER render it as written words — no captions, no subtitles, no signage, "
             "no readable text, no letters or characters anywhere in the frame. "
             "If the rest of these notes conflict with the story beat, the story beat wins."
+        )
+    if line:
+        # 대사는 '들리는 것'이다. 글자로 찍히면 한글이 깨져 나온다.
+        parts.append(
+            "SPOKEN DIALOGUE — the character says this line out loud, in Korean:\n"
+            f'"{line}"\n'
+            "Audio: a single Korean line delivered in the character's own voice, "
+            "matched to the lip movement. No narrator, no translation, no other speech. "
+            "The words are HEARD ONLY — they never appear as text, captions or subtitles "
+            "anywhere in the frame."
         )
     parts.append(MOTION_PRESETS[motion_key])
     if beat:
@@ -222,7 +232,8 @@ def gcloud_project():
 
 def generate_clip(img_path, tier="lite", seconds=8, motion="slow_push",
                   extra=None, beat=None, refs=None, world=None, aspect="16:9",
-                  resolution="720p", audio=False, gcs=None, out_stem=None, on_progress=None):
+                  resolution="720p", audio=False, gcs=None, out_stem=None, on_progress=None,
+                  line=None):
     """씬 이미지 → 영상 클립 1편. 성공 시 (출력경로, 메타dict) 반환.
 
     server.py 등 다른 프로세스에서 재사용하기 위해 CLI와 분리했다.
@@ -257,7 +268,7 @@ def generate_clip(img_path, tier="lite", seconds=8, motion="slow_push",
             reason = "시작 프레임과 병용 불가 — 체이닝 우선"
         say(f"레퍼런스 미사용: {reason}")
         refs = []
-    prompt = build_prompt(motion, extra, beat, has_refs=bool(refs), world=world)
+    prompt = build_prompt(motion, extra, beat, has_refs=bool(refs), world=world, line=line)
     CLIPS_DIR.mkdir(parents=True, exist_ok=True)
 
     cfg_kwargs = dict(
@@ -266,7 +277,7 @@ def generate_clip(img_path, tier="lite", seconds=8, motion="slow_push",
         duration_seconds=seconds,
         resolution=resolution,
         person_generation="allow_adult",
-        generate_audio=audio,
+        generate_audio=bool(audio or line),
         negative_prompt=(world or {}).get("negative") or NEGATIVE,
     )
     if gcs:

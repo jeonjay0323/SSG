@@ -44,7 +44,13 @@ RULES — all of them matter:
    that exist in this world.
 
 3. Describe only what a camera can see: a physical subject, an action, a change
-   in the space, light. No inner thoughts, no dialogue, no exposition.
+   in the space, light. No inner thoughts, no exposition.
+
+   DIALOGUE IS THE ONE EXCEPTION. When the visitor wrote their line inside
+   quotation marks, the character SAYS it. Describe the act of speaking —
+   who speaks, to whom, how the body and face carry the line. Still never ask
+   for the words to appear as written text anywhere in the frame; the words are
+   heard, not seen.
 
 4. One or two sentences. Present tense. English. No camera directions
    (no "close-up", no "the camera pans") — framing is decided elsewhere.
@@ -67,6 +73,19 @@ def _project():
         ["gcloud", "config", "get-value", "project"], text=True).strip()
 
 
+import re
+
+# 따옴표로 감싼 부분은 '말한 것'으로 본다. 홑·겹·한국식 인용부호를 모두 받는다.
+QUOTE = re.compile(r'["\u201c\u201d\u2018\u2019\'\u300c\u300d\u300e\u300f]([^"\u201c\u201d\u2018\u2019\'\u300c\u300d\u300e\u300f]{1,40})'
+                   r'["\u201c\u201d\u2018\u2019\'\u300c\u300d\u300e\u300f]')
+
+
+def spoken(text):
+    """따옴표 안의 대사를 돌려준다. 없으면 None."""
+    m = QUOTE.search(text or "")
+    return m.group(1).strip() if m and m.group(1).strip() else None
+
+
 def interpret(text, world=None, previous=None):
     """관람객 문장 → 촬영 가능한 영어 장면 묘사. 실패하면 원문을 돌려준다."""
     if not text or not text.strip():
@@ -81,6 +100,12 @@ def interpret(text, world=None, previous=None):
     ]
     if previous:
         ctx.append(f"WHAT JUST HAPPENED: {previous}")
+    line = spoken(text)
+    if line:
+        ctx.append(f'THE CHARACTER SAYS (Korean, spoken aloud): "{line}"')
+        ctx.append("Describe the character speaking this line — posture, gaze, "
+                   "breath, what the line does to the moment. The words are heard, "
+                   "never written in the frame.")
     ctx.append(f'VISITOR INPUT (Korean): "{text}"')
     ctx.append("Write the shot description now.")
 
