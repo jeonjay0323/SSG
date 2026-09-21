@@ -50,6 +50,9 @@ import storage
 # 체인 프레임은 파생물이라 휘발성 경로에 둔다. 없으면 원본 클립에서 다시 뽑는다.
 CHAIN_DIR = Path(os.environ.get("SSG_TMP", "/tmp/ssg")) / "chain"
 
+# 오디오 — 대사가 있는 컷은 목소리가 필요하다. SSG_AUDIO=0 으로 끌 수 있다.
+AUDIO = os.environ.get("SSG_AUDIO", "1").lower() not in ("0", "false", "no")
+
 STORY_PATH = ROOT / "Config" / "story.json"
 
 
@@ -96,6 +99,7 @@ class Track:
         self.contested = False
         self.canon = []
         self.cycle = 0        # 완결·초기화 때마다 증가 (체인 프레임 캐시 분리용)
+        self.writers = set()  # 이 이야기에 한 번이라도 문장을 보낸 기기
         self.collect_opened = None   # 접수 창이 열린 시각 (롤링 연장의 기준)
         self.start_round()
 
@@ -164,9 +168,17 @@ class Track:
                     nd = self.collect_opened + total
                     if self.deadline is None or nd > self.deadline:
                         self.deadline = nd
+            # 따옴표로 쓴 문장은 인물의 대사다. 지문과 다르게 다뤄진다 —
+            # 영상에서는 목소리로 들리고, 화면에서는 다른 자막으로 뜬다.
+            try:
+                from beat import spoken
+                line = spoken(text)
+            except Exception:
+                line = None
             sub = {"id": f"{self.sid}:{uuid.uuid4().hex[:8]}", "text": text,
-                   "voter": voter, "nick": self.clean_nick(nick)}
+                   "line": line, "voter": voter, "nick": self.clean_nick(nick)}
             self.pool.append(sub)
+            self.writers.add(voter)
             n = len(self.pool)
         print(f"  + [{self.sid}] 접수 {n}건: {text[:24]}", flush=True)
         return True, sub
@@ -190,6 +202,7 @@ class Track:
     def reset(self):
         with self.lock:
             self.canon = []
+            self.writers = set()
             self.round_n = 0
             self.cycle += 1
         self.start_round()
@@ -205,10 +218,13 @@ class Track:
                 "phase": self.phase,
                 "remaining": self.remaining(),
                 "poolCount": len(self.pool),
-                "pool": [{"text": p["text"], "nick": p.get("nick", "")}
+                # 이 이야기에 참여한 총 인원 (기기 기준, 라운드가 넘어가도 유지)
+                "writerCount": len(self.writers),
+                "pool": [{"text": p["text"], "line": p.get("line"),
+                          "nick": p.get("nick", "")}
                          for p in self.pool][-4:],
                 "candidates": [
-                    {k: c.get(k) for k in ("id", "text", "nick", "video", "still",
+                    {k: c.get(k) for k in ("id", "text", "line", "nick", "video", "still",
                                             "status", "progress", "votes")}
                     for c in self.candidates
                 ],
@@ -483,6 +499,9 @@ def make_candidate_video(eng, tr, cand):
             # 관람객 문장은 최우선 지시(beat)로 프롬프트 맨 앞에 놓인다.
             # extra 로 뒤에 붙이면 카메라·정체성 지시에 묻혀 무시된다.
             beat=BEATS.get(cand["id"]) or cand["text"],
+            # 대사가 있으면 목소리까지 생성된다 (generate_clip 이 audio 를 켠다)
+            line=cand.get("line"),
+            audio=AUDIO,
             world=(__import__("restage").load_world(tr.scenario["world"])
                    if tr.scenario.get("world") else None),
             out_stem=f"{tr.sid}_{tr.round_n}_{cand['id'].split(':')[-1]}",
@@ -511,6 +530,22 @@ def make_candidate_video(eng, tr, cand):
         with eng.lock:                      # 공유 카운터
             eng.spent_usd += meta["estimated_usd"]
             eng.generated += 1
+        # 자막은 '쓴 문장'이 아니라 '들리는 말'이어야 한다.
+        # 클립에서 실제 음성을 받아 적어 대사를 갈아끼운다. 말이 없으면 자막도 없다.
+        if AUDIO:
+            try:
+                from transcribe import heard
+                said = heard(where)
+                with tr.lock:
+                    cand["line"] = said or None
+                if said:
+                    print(f"  ♪ [{tr.sid}] 들린 말: {said[:24]}", flush=True)
+            except Exception as e:
+                print(f"  ! 자막 받아쓰기 건너뜀 ({type(e).__name__})", flush=True)
+        else:
+            with tr.lock:
+                cand["line"] = None
+
         with tr.lock:
             cand["video"] = "/clips/" + name
             cand["shot"] = shot["label"] if shot else None
@@ -615,7 +650,8 @@ def save_snapshot(eng):
     tracks = {}
     for sid, t in list(eng.tracks.items()):
         with t.lock:
-            tracks[sid] = {"round": t.round_n, "canon": list(t.canon)}
+            tracks[sid] = {"round": t.round_n, "canon": list(t.canon),
+                           "writers": sorted(t.writers)}
     with eng.lock:
         data = {"tracks": tracks,
                 "spentUsd": round(eng.spent_usd, 4),
@@ -642,6 +678,7 @@ def load_snapshot(eng):
             t = eng.tracks.get(sid)
             if t:
                 t.canon = td.get("canon", [])
+                t.writers = set(td.get("writers", []))
                 t.round_n = max(t.round_n, td.get("round", 1))
     n = sum(len(t.canon) for t in eng.tracks.values())
     if n:
@@ -656,7 +693,7 @@ def _commit_winner(eng, tr):
         return
     tr.canon.append({
         "n": len(tr.scenario["scenes"]) + len(tr.canon) + 1,
-        "text": w["text"], "nick": w.get("nick", ""),
+        "text": w["text"], "line": w.get("line"), "nick": w.get("nick", ""),
         "video": w["video"], "still": w["still"],
         "votes": w["votes"], "contested": tr.contested,
         "shot": w.get("shot"),
@@ -700,8 +737,8 @@ def advance(eng, tr, story, pool):
             k = min(tr.cfg["candidates"], len(tr.pool))
             picked = random.sample(tr.pool, k)
             tr.candidates = [{
-                "id": p["id"], "text": p["text"], "nick": p.get("nick", ""),
-                "video": None, "still": None,
+                "id": p["id"], "text": p["text"], "line": p.get("line"),
+                "nick": p.get("nick", ""), "video": None, "still": None,
                 "status": "generating", "progress": "대기", "votes": 0,
             } for p in picked]
             tr._set("generate", 600)
@@ -871,6 +908,9 @@ class Handler(BaseHTTPRequestHandler):
         p = self.path.split("?")[0]
         if p in ("/", "/write", "/write.html"):
             return self._file(ROOT / "Templates" / "write.html", "text/html; charset=utf-8")
+        # 합본 시안 — 상영관을 폰 안에 들인 화면
+        if p in ("/solo", "/write_stage", "/write_stage.html"):
+            return self._file(ROOT / "Templates" / "write_stage.html", "text/html; charset=utf-8")
         if p in ("/stage", "/stage.html"):
             return self._file(ROOT / "Templates" / "stage.html", "text/html; charset=utf-8")
         if p == "/api/round":
