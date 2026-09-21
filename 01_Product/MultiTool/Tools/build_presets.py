@@ -45,7 +45,7 @@ def build_one(sc, world, i, text):
 
     base = SCENES / gen["startFrame"].removeprefix("/scenes/")
     beat = interpret(text, world, None)
-    shot = shot_for(0, world)          # 첫 관람객 씬은 항상 새 앵글
+    shot = shot_for(0, world)          # 첫 참여자 씬은 항상 새 앵글
     staged = STAGED / f"{sid}_{i}.png"
     restage(base, staged, shot, beat=beat, world=world,
             aspect=gen.get("aspect", "16:9"))

@@ -305,7 +305,7 @@ def asset_refs():
 def chain_start_frame(tr):
     """씬 N 의 시작 프레임 = 직전 확정 씬 영상의 마지막 프레임.
 
-    이게 없으면 모든 관람객 씬이 도입부 씬 2 에서 다시 시작해서,
+    이게 없으면 모든 참여자 씬이 도입부 씬 2 에서 다시 시작해서,
     이야기는 나아가는데 그림은 매번 리셋된다.
     """
     # startFrame 은 "/scenes/..." 형태의 URL. 하위 폴더(chain/)가 있으므로
@@ -346,7 +346,7 @@ def wants_new_angle(gen, scene_idx):
     (둘을 묶어두면 앵글을 유지하는 씬에 레퍼런스가 아예 안 들어간다.)
     restageEvery: 0 = 앵글 항상 고정, 1 = 매 씬 새 앵글, 2 = 한 씬 걸러.
     """
-    # 첫 관람객 씬은 항상 새 앵글이다. 도입부가 던진 질문("문 밖에 있던 것은")에
+    # 첫 참여자 씬은 항상 새 앵글이다. 도입부가 던진 질문("문 밖에 있던 것은")에
     # 답해야 하는데, 구도를 그대로 유지하면 도입부와 거의 같은 그림이 나온다.
     if scene_idx == 0:
         return True
@@ -361,7 +361,7 @@ BEATS = {}
 
 
 def interpret_beat(tr, text, world):
-    """관람객 문장 → 촬영 가능한 묘사. 실패하면 원문."""
+    """참여자 문장 → 촬영 가능한 묘사. 실패하면 원문."""
     try:
         from beat import interpret
         with tr.lock:
@@ -506,10 +506,10 @@ def make_candidate_video(eng, tr, cand):
             seconds=gen.get("seconds", 4),
             aspect=gen.get("aspect", "16:9"),
             # 리스테이징으로 프레이밍이 이미 정해졌으면 카메라를 붙잡아 둔다.
-            # 아니면 첫 관람객 씬만 '문 밖이 드러나는' 샷.
+            # 아니면 첫 참여자 씬만 '문 밖이 드러나는' 샷.
             motion=("staged" if shot else
                     ("reveal_beyond" if not tr.canon else "continue_beyond")),
-            # 관람객 문장은 최우선 지시(beat)로 프롬프트 맨 앞에 놓인다.
+            # 참여자 문장은 최우선 지시(beat)로 프롬프트 맨 앞에 놓인다.
             # extra 로 뒤에 붙이면 카메라·정체성 지시에 묻혀 무시된다.
             beat=BEATS.get(cand["id"]) or cand["text"],
             # 대사가 있으면 목소리까지 생성된다 (generate_clip 이 audio 를 켠다)
@@ -575,7 +575,7 @@ def make_candidate_video(eng, tr, cand):
 # ─────────────────────────────────────────────────────────────
 # 입력 필터
 #
-# 무인으로 돌아가고, 참여자 문장은 화면에 그대로 자막으로 뜬다.
+# 참여자 문장은 화면에 그대로 자막으로 뜬다.
 # Veo 자체 안전 필터는 '영상 생성'만 막을 뿐 문장 노출은 못 막는다.
 # 접수 시점에 걸러야 화면에 아예 안 뜬다.
 # ─────────────────────────────────────────────────────────────

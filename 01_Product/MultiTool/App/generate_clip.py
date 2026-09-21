@@ -82,7 +82,7 @@ MOTION_PRESETS = {
         "He does not step forward. The shot ends before anything is revealed."
     ),
 
-    # 관람객 씬 전용 — 문 밖이 '드러나야' 한다. door_widen 과 정반대 목적이므로 혼동 금지.
+    # 참여자 씬 전용 — 문 밖이 '드러나야' 한다. door_widen 과 정반대 목적이므로 혼동 금지.
     # 카메라는 고정. 움직일수록 인물이 흔들린다.
     "reveal_beyond": (
         "Locked-off camera — the frame does not move, no push-in, no pan, no zoom. "
@@ -108,8 +108,8 @@ MOTION_PRESETS = {
     ),
 }
 
-# 관람객 씬용 — 인물은 절대 불변, 바뀌어도 되는 건 '문 밖 세계'뿐.
-# (IDENTITY_LOCK 은 '아무것도 바꾸지 말라'는 지시라 관람객 씬에 쓰면 문장이 무시되고,
+# 참여자 씬용 — 인물은 절대 불변, 바뀌어도 되는 건 '문 밖 세계'뿐.
+# (IDENTITY_LOCK 은 '아무것도 바꾸지 말라'는 지시라 참여자 씬에 쓰면 문장이 무시되고,
 #  반대로 너무 느슨하게 풀면 인물까지 흔들린다. 그래서 둘을 명시적으로 갈라 적는다.)
 CHARACTER_LOCK = (
     "WHAT MUST NOT CHANGE — the man himself:\n"
@@ -139,7 +139,7 @@ NEGATIVE = (
     "deformed face, distorted features, extra limbs, warping, morphing"
 )
 
-# 감독 레이어 — 관람객 문장에는 없는 연출 지시. 모든 관람객 씬에 붙는다.
+# 감독 레이어 — 참여자 문장에는 없는 연출 지시. 모든 참여자 씬에 붙는다.
 DIRECTOR = (
     "DIRECTION — shoot this in the visual language of the Korean drama Misaeng. "
     "Observational and unglamorous; the camera is a witness in the room, not a "
@@ -175,7 +175,7 @@ IDENTITY_LOCK = (
 
 
 def build_prompt(motion_key, extra=None, beat=None, has_refs=False, world=None, line=None):
-    """beat = 관람객이 쓴 문장. 주어지면 프롬프트 맨 앞에 최우선 지시로 놓는다.
+    """beat = 참여자가 쓴 문장. 주어지면 프롬프트 맨 앞에 최우선 지시로 놓는다.
 
     뒤에 붙이면 카메라 지시와 정체성 고정에 묻혀 무시된다 —
     실제로 그래서 문장과 무관한 영상이 나왔다.

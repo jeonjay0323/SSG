@@ -185,5 +185,5 @@ gcloud run deploy ssg-theater --source 01_Product/MultiTool --region us-central1
 
 ---
 
-이 설치물의 기획 의도와 설계 근거는 [멀티툴 기획안](../../02_Docs/Plan/멀티툴%20기획안.md) 에 있다.
+이 서비스의 기획 의도와 설계 근거는 [멀티툴 기획안](../../02_Docs/Plan/멀티툴%20기획안.md) 에 있다.
 그 밖 기획 문서는 `02_Docs/` 에 있다.

@@ -129,8 +129,8 @@ def hold_shot(world=None):
 
 
 # ─────────────────────────────────────────────────────────────
-# 감독 레이어 — 관람객에게는 보이지 않는 연출 지시.
-# 관람객은 "무슨 일이 일어나는가"만 쓰고, "어떻게 찍는가"는 전부 여기서 정한다.
+# 감독 레이어 — 참여자에게는 보이지 않는 연출 지시.
+# 참여자는 "무슨 일이 일어나는가"만 쓰고, "어떻게 찍는가"는 전부 여기서 정한다.
 # ─────────────────────────────────────────────────────────────
 DIRECTOR = (
     "DIRECTION — shoot this in the visual language of the Korean drama Misaeng. "
@@ -251,7 +251,7 @@ def restage(prev_frame, out_path, shot, beat=None, refs_dir=None, world=None,
     """직전 프레임 → 다음 컷의 시작 프레임.
 
     shot : SHOTS 항목
-    beat : 관람객 문장. 새 컷이 무엇을 담아야 하는지 알려준다.
+    beat : 참여자 문장. 새 컷이 무엇을 담아야 하는지 알려준다.
     """
     from google import genai
     from google.genai import types
