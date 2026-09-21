@@ -100,6 +100,7 @@ class Track:
         self.canon = []
         self.cycle = 0        # 완결·초기화 때마다 증가 (체인 프레임 캐시 분리용)
         self.writers = set()  # 이 이야기에 한 번이라도 문장을 보낸 기기
+        self.last_write = {}  # 기기 → 마지막으로 쓴 시각 (다음 글까지 텀을 둔다)
         self.collect_opened = None   # 접수 창이 열린 시각 (롤링 연장의 기준)
         self.start_round()
 
@@ -136,17 +137,27 @@ class Track:
         ok, _ = screen_text(n)
         return n if ok else ""
 
-    def submit(self, text, voter, nick=""):
+    def submit(self, text, voter, nick="", skip_cooldown=False):
         text = (text or "").strip()
         with self.lock:
             if self.phase not in ("idle", "collect"):
                 return False, "지금은 이 이야기의 접수 시간이 아닙니다"
             if not text:
                 return False, "문장을 입력해주세요"
+            if len(text) < self.cfg.get("minChars", 5):
+                return False, f"{self.cfg.get('minChars', 5)}자 이상 써주세요"
             if len(text) > self.cfg.get("maxChars", 40):
                 return False, f"{self.cfg.get('maxChars', 40)}자 이내로 써주세요"
             if any(p["voter"] == voter for p in self.pool):
                 return False, "이번 라운드엔 이미 참여하셨습니다"
+            # 연달아 쓰지 못하게 텀을 둔다 — 한 사람이 스토리를 끌고 가지 않도록.
+            # 턴 기준이면 혼자 쓰는 시간대에 금방 돌아와 의미가 없어 시간으로 잰다.
+            cool = self.cfg.get("cooldownSeconds", 120)
+            prev = self.last_write.get(voter)
+            if prev is not None and not skip_cooldown:
+                left = round(cool - (time.monotonic() - prev))
+                if left > 0:
+                    return False, f"{left//60}분 {left%60}초 뒤에 다시 쓸 수 있어요"
             ok, why = screen_text(text)
             if not ok:
                 print(f"  ✗ [{self.sid}] 차단({why}): {text[:24]}", flush=True)
@@ -179,6 +190,7 @@ class Track:
                    "line": line, "voter": voter, "nick": self.clean_nick(nick)}
             self.pool.append(sub)
             self.writers.add(voter)
+            self.last_write[voter] = time.monotonic()
             n = len(self.pool)
         print(f"  + [{self.sid}] 접수 {n}건: {text[:24]}", flush=True)
         return True, sub
@@ -203,6 +215,7 @@ class Track:
         with self.lock:
             self.canon = []
             self.writers = set()
+            self.last_write = {}
             self.round_n = 0
             self.cycle += 1
         self.start_round()
@@ -956,7 +969,11 @@ class Handler(BaseHTTPRequestHandler):
         if self.path == "/api/submit":
             if not tr:
                 return self._send(200, {"ok": False, "message": "이야기를 골라주세요"})
-            ok, res = tr.submit(body.get("text"), voter, body.get("nick"))
+            skip = bool(body.get("coin"))
+            ok, res = tr.submit(body.get("text"), voter, body.get("nick"),
+                                skip_cooldown=skip)
+            if ok and skip:
+                print(f"  ◆ [{tr.sid}] 코인으로 텀 건너뜀", flush=True)
             if ok:
                 # 쓰기 보조를 썼는지 남긴다 — sentence / keyword / 둘 다 / none
                 print(f"    보조: {(body.get('aid') or 'none')[:24]}", flush=True)
@@ -1007,6 +1024,8 @@ def main():
     story = load_story()
     cfg = dict(story["round"])
     cfg["maxChars"] = story["handoff"].get("maxChars", 40)
+    cfg["minChars"] = story["handoff"].get("minChars", 5)
+    cfg["cooldownSeconds"] = story["round"].get("cooldownSeconds", 120)
     if args.fast:
         cfg.update(collectSeconds=8, voteSeconds=15, revealSeconds=5)
 
