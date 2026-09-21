@@ -107,7 +107,7 @@
   .btn[disabled]{background:var(--outline-light);border-color:var(--outline-light);
                  color:var(--dust);cursor:default;opacity:1}
 
-  /* 보조 버튼 — 주 동선(이야기 카드)과 경쟁하지 않게 외곽선만 */
+  /* 보조 버튼 — 주 동선(스토리 카드)과 경쟁하지 않게 외곽선만 */
   .btn.sub-btn{
     background:transparent;color:var(--on-surface);
     border:1px solid var(--outline-light);
@@ -136,7 +136,7 @@
   }
   .chip.sent .ic{color:var(--primary-normal)}
 
-  /* 이야기 한 줄 — 대기 화면·생성중 탭에서 함께 쓴다 */
+  /* 스토리 한 줄 — 대기 화면·생성중 탭에서 함께 쓴다 */
   .others{margin-top:22px}
   .others .cap{font-size:12px;color:var(--dust);margin-bottom:8px;text-align:center}
   .orow{
@@ -231,7 +231,7 @@
 
 
   /* ── 상영창 (합본 시안) ──
-     상영관을 폰 안으로 들였다. 내가 들어간 이야기 한 칸만 보여준다.
+     상영관을 폰 안으로 들였다. 내가 들어간 스토리 한 칸만 보여준다.
      stage.html 의 층 구조(재생 · 접수 · 생성 · 투표)를 그대로 축소했다. */
   #mini{
     position:sticky;top:0;z-index:7;margin:-4px -18px 0;padding:0 18px 12px;
@@ -709,7 +709,7 @@
   .scen .cnt.full{color:#fff;border-color:var(--primary-normal)}
 
 
-  /* 카드 안의 문장 — 이야기에서 떠온 조각이라는 걸 박스로 드러낸다 */
+  /* 카드 안의 문장 — 스토리에서 떠온 조각이라는 걸 박스로 드러낸다 */
   .scen .b .lead{
     padding:11px 13px;border-radius:4px;
     background:var(--bg-elevated-alt);border:1px solid var(--line-solid-alt);
@@ -847,7 +847,7 @@
   }
 
 
-  /* 선점하기 — 아무도 손대지 않은 이야기. 가장 먼저 눈에 띄어야 한다.
+  /* 선점하기 — 아무도 손대지 않은 스토리. 가장 먼저 눈에 띄어야 한다.
      원티드 Accent/Background/Red Orange (다크 #FF7B2E) */
   .scen .live.live-claim{
     color:#fff;background:#ff7b2e;border-color:#ff7b2e;
@@ -928,7 +928,7 @@
   }
 
 
-  /* 쓰인 글은 한 줄씩 박스에 담긴다 — 이야기가 쌓이는 자리 */
+  /* 쓰인 글은 한 줄씩 박스에 담긴다 — 스토리가 쌓이는 자리 */
   .scen .thread{gap:6px;margin:0}
   .scen .thread li{
     padding:11px 13px;border-radius:4px;
@@ -969,7 +969,7 @@
   @keyframes popIn{from{opacity:0;transform:translateY(10px) scale(.97)}to{opacity:1;transform:none}}
 
 
-  /* 슬롯 — 이야기들이 굴러가다 하나에 멈춘다 */
+  /* 슬롯 — 스토리들이 굴러가다 하나에 멈춘다 */
   .slot{
     height:64px;margin:0 0 18px;border-radius:4px;overflow:hidden;position:relative;
     background:var(--bg-elevated-alt);border:1px solid var(--line-solid);
@@ -1039,6 +1039,256 @@
   html,body{background:var(--bg-normal)}
   html{min-height:100%}
 
+
+  /* 클립 위아래에 검은 띠가 1% 남짓 박혀 있다(모델 출력 그대로).
+     카드뿐 아니라 상영창·후보 화면까지 같은 비율로 잘라낸다. */
+  .scen .poster video.ph,
+  .mbox video,
+  .mvote .c video{transform:scale(1.04);transform-origin:center}
+
+  /* 팝업은 갤러리가 보일 때만 — 이름 정하기·쓰기 화면 위로 겹치지 않게 */
+
+
+  /* 작성창 — 길어져도 화면을 밀어내지 않는다. 안에서 스크롤. */
+  textarea{max-height:30vh;overflow-y:auto}
+
+  /* 넘치는 문장은 잘라내지 않고 좌우로 흐른다.
+     말줄임은 뒷말을 아예 감춰서 답답하다 — 밀어서 읽을 수 있게 둔다. */
+  .scen .thread .tx{
+    overflow-x:auto;overflow-y:hidden;text-overflow:clip;
+    -webkit-overflow-scrolling:touch;scrollbar-width:none;
+  }
+  .scen .thread .tx::-webkit-scrollbar{display:none}
+  .scen .thread b{max-width:none;text-overflow:clip}
+
+
+  /* 로고 — 글씨 대신 심볼. 색은 글자색을 따른다. */
+  .topnav .logo{display:flex;align-items:center;height:24px;color:var(--label-normal)}
+  .topnav .logo svg{height:22px;width:auto;display:block}
+
+
+  /* 이름은 고정, 글만 흐른다 */
+  .scen .thread b{flex:none}
+  .scen .thread .tx{overflow:hidden;position:relative}
+  .scen .thread .tx .mv{display:inline-block;white-space:nowrap;will-change:transform}
+  @keyframes flow{
+    0%, 14%{transform:translateX(0)}
+    86%, 100%{transform:translateX(calc(-1 * var(--mv)))}
+  }
+  @media (prefers-reduced-motion: reduce){
+    .scen .thread .tx .mv{animation:none !important}
+    .scen .thread .tx{overflow-x:auto}
+  }
+
+
+  /* 상단 바 — 밑줄 없이, 로고는 살짝 안쪽으로 */
+  header.topnav{border-bottom:none}
+  .topnav .lead{left:20px}
+  .topnav .trail{right:20px}
+
+
+  /* 상단 바의 .lead 는 '왼쪽 영역'이라는 뜻인데,
+     스토리의 앞 문장을 담는 .lead 와 이름이 겹쳐 그 밑줄까지 물려받고 있었다.
+     헤더 쪽은 글자 스타일도 테두리도 물려받지 않는다. */
+  .topnav .lead{
+    border:none;margin:0;padding:0;
+    font-family:inherit;font-size:inherit;font-weight:inherit;color:inherit;line-height:1;
+  }
+
+
+  /* 목록 끝 — 고를 게 없을 때 */
+  .make{
+    margin-top:4px;padding:24px 18px;border-radius:4px;text-align:center;
+    border:1px dashed var(--line-normal);background:var(--fill-alt);
+  }
+  .make .t{
+    font-family:var(--brand);font-weight:700;
+    font-size:17px;line-height:24px;color:var(--label-normal);
+  }
+  .make .s{
+    margin:6px 0 16px;font-family:var(--brand);
+    font-size:13px;line-height:18px;color:var(--label-alt);
+  }
+
+
+  /* 직접 스토리 쓰기 — 보조 행동. 채움만 옅게, 테두리는 없앤다
+     (원티드 Fill/Normal 위에 Label/Normal) */
+  #makeBtn{
+    background:var(--fill-normal);border:none;color:var(--label-normal);
+    font-weight:500;
+  }
+  #makeBtn:active{background:var(--fill-strong);opacity:1}
+
+
+  /* 창작 탭에서는 '직접 스토리 쓰기'가 주인공 — 여기서 할 일이 그것뿐이다 */
+  #btnOwn{
+    padding:17px 12px;font-weight:700;font-size:17px;line-height:24px;
+    box-shadow:0 6px 20px rgba(107,224,22,.22);
+  }
+  #madeEmpty{padding:56px 16px 20px}
+
+
+  /* 창작 탭 빈 화면 — 글과 버튼을 한 덩이로 묶어 가운데 둔다 */
+  .made-wrap{
+    display:flex;flex-direction:column;align-items:center;justify-content:center;
+    gap:4px;min-height:240px;
+  }
+  .made-wrap .note{padding:0;line-height:1.5}
+  .made-wrap .note .em{margin-bottom:6px}
+  #btnOwn{
+    width:auto;padding:13px 20px;font-size:15px;line-height:22px;font-weight:700;
+    box-shadow:0 6px 20px rgba(107,224,22,.22);
+  }
+
+
+
+  /* 빈 화면 버튼 — 아이콘 없이 글자만, 가운데로 */
+  #btnOwn{
+    display:inline-flex;align-items:center;justify-content:center;gap:0;text-align:center;
+  }
+
+
+  /* ── 화면마다 되풀이되는 것들을 한 규칙으로 ──
+     제목 → 설명 → 내용. 화면이 달라도 간격이 같아야 같은 앱으로 읽힌다. */
+  section > h2{margin-bottom:6px}
+  section > h2 + .sub{margin-bottom:26px}
+  section > .segs{margin-bottom:18px}
+  section > .segs + .segdesc{margin-top:-6px}
+
+
+  /* ── 스토리 상세: 지금까지의 스토리 ──
+     한 덩이의 섹션으로 묶고, 쓴 사람은 문장 끝에 조용히 붙인다. */
+  .dlist{
+    padding:18px 16px 16px;border-radius:4px;
+    background:var(--bg-elevated);border:1px solid var(--line-solid);
+  }
+  .dlist .cap{
+    margin-bottom:14px;font-family:var(--brand);font-weight:700;
+    font-size:17px;line-height:24px;letter-spacing:0;color:var(--label-normal);
+  }
+  .dlist ol{gap:14px}
+  .dlist li{
+    display:block;padding:0;border:none;background:none;
+    font-size:16px;line-height:26px;letter-spacing:0.0057em;color:var(--label-normal);
+  }
+  .dlist li .by{
+    margin-left:6px;font-family:var(--brand);
+    font-size:13px;line-height:18px;letter-spacing:0.0194em;color:var(--label-alt);
+    white-space:nowrap;
+  }
+
+
+  /* ── 쓰기 화면 ──
+     페이지는 스크롤하지 않는다. 키보드가 올라오면 보내기 버튼이 그 위에 붙는다. */
+  body.writing #vSubmit{
+    display:flex;flex-direction:column;
+    padding-bottom:calc(var(--kb, 0px) + 86px);
+  }
+  body.writing #fabWrap{display:none}
+  body.writing #send{
+    position:fixed;left:50%;z-index:12;
+    transform:translateX(-50%);
+    width:calc(100% - 36px);max-width:444px;
+    bottom:calc(var(--kb, 0px) + env(safe-area-inset-bottom) + 14px);
+    transition:bottom .18s ease;
+  }
+  body.writing #poolNote{
+    position:fixed;left:50%;transform:translateX(-50%);z-index:12;
+    bottom:calc(var(--kb, 0px) + env(safe-area-inset-bottom) + 72px);
+    margin:0;
+  }
+
+  /* 입력칸 강조는 한 줄로 얇게 */
+  .chain .mine{border-color:var(--line-solid);box-shadow:none}
+  .chain .mine:focus-within{border-color:var(--primary-normal);box-shadow:none}
+
+  /* 힌트 — 문장도 키워드도 같은 꼴. 회색 선에 흰 글씨 */
+  .chip,.chip.sent{
+    border:1px solid var(--line-normal);background:transparent;
+    color:var(--label-normal);font-weight:500;
+  }
+  .chip.sent{border-radius:4px;padding:12px 14px}
+  .aid{margin-top:14px}
+
+
+  /* 첫 문장 보상 — 무엇을 고르는지가 곧 실험 자료다 */
+  #rewardWrap{position:fixed;inset:0;z-index:23;display:flex;align-items:center;justify-content:center;padding:24px}
+  .pop.reward{max-width:360px;text-align:center}
+  .pop.reward .badge{
+    display:inline-block;margin-bottom:12px;padding:5px 12px;border-radius:999px;
+    background:var(--primary-normal);color:var(--static-black);
+    font-family:var(--brand);font-weight:700;font-size:12px;line-height:16px;
+  }
+  .rewards{display:flex;flex-direction:column;gap:8px}
+  .reward-opt{
+    width:100%;padding:14px 16px;border-radius:4px;text-align:left;
+    background:var(--bg-elevated-alt);border:1px solid var(--line-solid);
+    transition:border-color .15s, background .15s;
+  }
+  .reward-opt:hover,.reward-opt:active{border-color:var(--primary-normal);background:var(--fill-alt)}
+  .reward-opt b{
+    display:block;font-family:var(--brand);font-weight:700;
+    font-size:16px;line-height:24px;color:var(--label-normal);
+  }
+  .reward-opt span{
+    display:block;margin-top:2px;
+    font-size:13px;line-height:18px;letter-spacing:0.0194em;color:var(--label-alt);
+  }
+
+
+  /* 쓰는 화면에서는 상영창을 처음부터 작게 — 쓰는 자리가 먼저다.
+     (스크롤에 따라 높이를 바꾸면 문서 길이가 같이 변해 화면이 떨린다) */
+  body.writing .mbox{height:26vh;max-height:240px}
+
+
+  /* 힌트는 문장이든 키워드든 한 벌 — 회색 선, 흰 글씨, 같은 모서리와 여백 */
+  .aid .chip,.aid .chip.sent{
+    border-radius:4px;padding:12px 14px;
+    border:1px solid var(--line-normal);background:transparent;
+    color:var(--label-normal);
+    font-family:'Pretendard',sans-serif;font-weight:500;
+    font-size:15px;line-height:22px;letter-spacing:0.0096em;
+    display:inline-flex;align-items:center;gap:0;
+  }
+  .aid .chip.sent{width:100%;justify-content:flex-start}
+  .aid .row{gap:8px}
+
+
+  /* 화살표는 아래를 가리키며 위아래로 움직인다 */
+  .chain .link .ic{animation:bob 1.6s ease-in-out infinite}
+  @keyframes bob{0%,100%{transform:translateY(-2px)}50%{transform:translateY(3px)}}
+
+  /* 힌트 — 처음 한 번만 메인 컬러로 점멸해서 '눌러도 된다'를 알린다 */
+  @keyframes hintFlash{
+    0%,100%{border-color:var(--line-normal);color:var(--label-normal)}
+    30%,70%{border-color:var(--primary-normal);color:var(--primary-normal)}
+  }
+  .aid.flash .chip{animation:hintFlash 1.1s ease-in-out 2}
+
+  /* 10초 넘게 손이 멈추면 한 번 튄다 */
+  @keyframes boing{
+    0%,100%{transform:translateY(0)}
+    25%{transform:translateY(-7px)}
+    45%{transform:translateY(0)}
+    62%{transform:translateY(-3px)}
+    80%{transform:translateY(0)}
+  }
+  .aid.boing .chip{animation:boing 1.1s ease-in-out 2}
+
+
+  /* 걸러진 문장 — 왜 막혔는지 그 자리에서 알린다 */
+  .err{
+    margin-top:8px;padding:9px 11px;border-radius:4px;
+    background:rgba(255,99,99,.12);border:1px solid var(--status-negative);
+    color:var(--status-negative);
+    font-size:13px;line-height:18px;letter-spacing:0.0194em;
+  }
+  @keyframes shake{
+    0%,100%{transform:translateX(0)} 20%{transform:translateX(-5px)}
+    40%{transform:translateX(5px)} 60%{transform:translateX(-3px)} 80%{transform:translateX(3px)}
+  }
+  .chain .mine.bad{border-color:var(--status-negative);animation:shake .34s ease}
+
   .hide{display:none !important}
 </style>
 </head>
@@ -1048,16 +1298,15 @@
 <header class="topnav">
   <div class="lead">
     <button class="navbtn hide" id="homeBtn" aria-label="뒤로"><svg class="ic" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M15.75 19.5 8.25 12l7.5-7.5"/></svg></button>
-    <div class="logo" id="navLogo">슥</div>
+    <div class="logo" id="navLogo" aria-label="슥"><svg viewBox="0 0 307 281" fill="none" aria-hidden="true"><path d="M306.5 138H0V183H306.5V138Z" fill="currentColor"/><path d="M307 211C307 211 307 237.212 307 241.22C307 271.441 286.261 281 256.411 281V260.339L25.1371 260.339C11.3117 260.339 0 249.238 0 235.67V211L307 211Z" fill="currentColor"/><path d="M307 56.6919V114H127.76C99.5082 113.692 75.9652 93.973 70.6288 67.4757C70.001 64.0865 69.6871 60.0811 69.6871 56.3838V35.1243H58.3865V56.3838C58.3865 60.0811 58.0726 64.0865 57.4448 67.4757C52.1084 94.2811 28.5654 114 0 114V56.6919H11.9284C24.7986 56.6919 34.8436 46.5243 34.8436 34.2V0H58.7004H70.001H93.544V33.8919C93.544 46.5243 103.903 56.3838 116.459 56.3838H128.701H307V56.6919Z" fill="currentColor"/></svg></div>
   </div>
   <div class="title" id="navTitle"></div>
   <div class="trail">
-    <button class="btn-ghost hide" id="nickBtn"></button>
     <div class="phase"><span class="dot"></span><span id="phaseText">연결 중</span></div>
   </div>
 </header>
 
-<!-- 상영창 — 내가 들어간 이야기 한 칸 -->
+<!-- 상영창 — 내가 들어간 스토리 한 칸 -->
 <div id="mini" class="hide">
   <div class="mbox">
     <video class="la" muted playsinline></video>
@@ -1066,10 +1315,10 @@
     <div class="mhead"><span class="mt"></span><span class="mph"></span></div>
     <div class="mcap"></div>
     <div class="midle"><div class="h"></div>
-      <div class="s">아래에 한 문장을 보내면<br>여기서 이어집니다</div></div>
+      <div class="s">아래에 한 문장을 보내면<br>여기서 이어져요</div></div>
     <div class="minbox"><div class="ttl"></div><div class="list"></div></div>
     <div class="mgen"><div class="cands"></div>
-      <div class="lab">첫 프레임이 나왔습니다 — 곧 움직입니다</div></div>
+      <div class="lab">첫 프레임이 나왔어요 — 곧 움직여요</div></div>
     <div class="mvote"><div class="cands"></div>
       <div class="lab">어느 장면으로 이어갈까요</div></div>
   </div>
@@ -1077,36 +1326,46 @@
 
 <!-- 시나리오 선택 -->
 <section id="vChoose" class="hide">
-  <h2 id="inviteText" style="margin-bottom:8px">한 줄의 상상에서 한 편의 영상까지</h2>
-  <div class="sub" style="margin-bottom:14px">정해진 결말은 없어요. 우리만의 이야기를 써봐요.</div>
+  <h2 id="inviteText">한 줄의 상상에서 한 편의 영상까지</h2>
+  <div class="sub">정해진 결말은 없어요. 우리만의 스토리를 써봐요.</div>
   <div class="segs">
     <button class="seg on" data-seg="original">오리지널</button>
     <button class="seg" data-seg="made">창작</button>
   </div>
   <div class="segdesc"><svg class="ic" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="m11.25 11.25.041-.02a.75.75 0 0 1 1.063.852l-.708 2.836a.75.75 0 0 0 1.063.853l.041-.021M21 12a9 9 0 1 1-18 0 9 9 0 0 1 18 0Zm-9-3.75h.008v.008H12V8.25Z"/></svg><span id="segDesc"></span></div>
   <div id="scenarios"></div>
-  <div id="madeEmpty" class="note hide">
-    <span class="em">아직 없습니다</span>
-    여기에는 사람들이 직접 시작한<br>이야기가 모입니다.
+  <div class="make" id="makeCta">
+    <div class="t">끌리는 스토리가 없나요?</div>
+    <div class="s">직접 시작하면 다른 사람들이 이어 써요.</div>
+    <button class="btn sub-btn" id="makeBtn">직접 스토리 쓰기</button>
   </div>
-  <button id="btnOwn" class="btn sub-btn hide" style="margin-top:4px">직접 이야기 시작하기</button>
+  <div id="madeWrap" class="made-wrap hide">
+    <div id="madeEmpty" class="note">
+      <span class="em">백지 상태예요</span>
+      여러분의 이야기로 채워주세요.
+    </div>
+    <button id="btnOwn" class="btn">직접 스토리 쓰기</button>
+  </div>
 </section>
 
 <!-- 생성중 -->
 <section id="vMine" class="hide">
-  <h2 style="margin-bottom:4px">참여한 이야기</h2>
-  <div class="sub" style="margin-bottom:16px">내가 문장을 보낸 이야기들입니다.</div>
+  <h2>참여한 스토리</h2>
+  <div class="sub">내가 문장을 보낸 스토리들이에요.</div>
+  <div class="segs">
+    <button class="seg on" data-mseg="original">오리지널</button>
+    <button class="seg" data-mseg="made">창작</button>
+  </div>
   <div id="mineList"></div>
-  <div class="note" id="mineEmpty" hidden>
-    <span class="em">아직 없습니다</span>
-    갤러리에서 이야기를 골라<br>한 문장을 보내보세요.
+  <div class="made-wrap" id="mineWrap" hidden>
+    <div class="note" id="mineEmpty"></div>
   </div>
 </section>
 
 <!-- 마이 -->
 <section id="vMe" class="hide">
   <div class="card" style="text-align:center;padding:26px 18px">
-    <div class="sub" style="margin-bottom:6px">이렇게 불립니다</div>
+    <div class="sub" style="margin-bottom:6px">이렇게 불려요</div>
     <div id="meNick" style="font-family:var(--brand);font-weight:700;font-size:26px;color:var(--on-surface)"></div>
     <div class="sub" style="margin-top:6px" id="meSub"></div>
   </div>
@@ -1120,9 +1379,9 @@
     <div class="ctx" id="nickCtx"></div>
     <h2 style="margin-bottom:6px">어떻게 불러드릴까요?</h2>
     <div class="sub" style="margin-bottom:14px">
-      장면 자막에 문장과 함께 표시됩니다.
+      장면 자막에 문장과 함께 떠요.
     </div>
-    <input id="nickInput" type="text" maxlength="12" placeholder="닉네임"
+    <input id="nickInput" type="text" maxlength="12" placeholder=""
            autocomplete="off" autocorrect="off" spellcheck="false">
     <div class="count" id="nickCount">0 / 12</div>
   </div>
@@ -1136,16 +1395,16 @@
   <div class="ctx" id="ctxLabel"></div>
   <div class="chain">
     <div class="prev">
-      <div class="tag">여기까지 나왔습니다</div>
+      <div class="tag">여기까지 나왔어요</div>
       <div class="lead" id="lead"></div>
     </div>
-    <div class="link"><svg class="ic" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 13.5 12 21m0 0-7.5-7.5M12 21V3"/></svg>다음에 일어날 일을 한 문장으로</div>
+    <div class="link"><svg class="ic" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true"><path stroke-linecap="round" stroke-linejoin="round" d="M19.5 13.5 12 21m0 0-7.5-7.5M12 21V3"/></svg>다음에 일어날 일은?</div>
     <div class="card mine">
-      <textarea id="text" placeholder="예) 문이 열리고 낯선 사람이 들어왔다&#10;따옴표로 쓰면 대사가 됩니다 — &quot;누구세요?&quot;" maxlength="60"
+      <textarea id="text" placeholder="예) 문이 열리고 낯선 사람이 들어왔다&#10;따옴표로 쓰면 대사가 돼요 — &quot;누구세요?&quot;" maxlength="60"
                 autocomplete="off" autocorrect="off"></textarea>
       <div class="count" id="count">0 / 40</div>
+      <div class="err hide" id="sendErr"></div>
       <div class="aid" id="aid" hidden>
-        <div class="cap">막히면 눌러보세요</div>
         <div class="row"><button class="chip sent" id="aidSent"></button></div>
         <div class="row" id="aidKw"></div>
       </div>
@@ -1159,12 +1418,12 @@
 <!-- 접수 완료 대기 -->
 <section id="vWaiting" class="hide">
   <div class="note">
-    <span class="em">보냈습니다</span>
-    위 상영창에 방금 보낸 문장이 떠 있습니다.
+    <span class="em">보냈어요</span>
+    위 상영창에 방금 보낸 문장이 떠 있어요.
     <div style="margin-top:18px;font-size:13px" id="waitCount"></div>
   </div>
   <div class="others" id="others" hidden>
-    <div class="cap">기다리는 동안, 다른 이야기도 이어보세요</div>
+    <div class="cap">기다리는 동안, 다른 스토리도 이어보세요</div>
     <div id="othersList"></div>
   </div>
 </section>
@@ -1174,30 +1433,30 @@
   <div class="note">
     <div class="spinner"></div>
     <span class="em">장면을 만드는 중</span>
-    위 상영창에 첫 프레임이 먼저 나옵니다.
+    위 상영창에 첫 프레임이 먼저 나와요.
     <div style="margin-top:16px;font-size:13px" id="genLeft"></div>
   </div>
 </section>
 
 <!-- 투표 -->
 <section id="vVote" class="hide">
-  <h2 style="margin-bottom:4px">어느 장면으로 이어갈까요</h2>
-  <div class="sub" style="margin-bottom:14px">하나를 골라주세요. 바꿔도 됩니다.</div>
+  <h2>어느 장면으로 이어갈까요</h2>
+  <div class="sub">하나를 골라주세요. 바꿔도 돼요.</div>
   <div id="cands"></div>
 </section>
 
 <!-- 발표 -->
 <section id="vReveal" class="hide">
   <div class="note">
-    <span class="em">이 장면으로 이어집니다</span>
+    <span class="em">이 장면으로 이어져요</span>
     <div id="winnerText" style="font-size:17px;color:var(--text);margin:14px 0 6px"></div>
     <div id="winnerVotes" style="font-size:13px"></div>
-    <div style="margin-top:20px;font-size:13px">곧 다음 라운드가 시작됩니다</div>
+    <div style="margin-top:20px;font-size:13px">곧 다음 라운드가 시작돼요</div>
   </div>
 </section>
 
 
-<!-- 이야기 상세 — 들어가기 전에 무슨 이야기인지 본다 -->
+<!-- 스토리 상세 — 들어가기 전에 무슨 스토리인지 본다 -->
 <section id="vDetail" class="hide">
   <div class="dhead">
     <h2 id="dTitle"></h2>
@@ -1205,13 +1464,13 @@
     <div class="sub" id="dLog" style="margin-top:10px"></div>
   </div>
   <div class="dlist">
-    <div class="cap" id="dCap">지금까지의 이야기</div>
+    <div class="cap" id="dCap">지금까지의 스토리</div>
     <ol id="dScenes"></ol>
   </div>
 </section>
 
 <div id="ctaBar" class="hide">
-  <button class="btn" id="ctaWrite">다음 이야기 이어쓰기</button>
+  <button class="btn" id="ctaWrite">다음 스토리 이어쓰기</button>
 </div>
 
 <nav id="tabs" class="hide">
@@ -1233,25 +1492,25 @@
 
     <div class="sheet-panel" data-panel="guide">
       <ol class="steps">
-        <li><b>1</b> 이어보고 싶은 이야기를 고르고</li>
+        <li><b>1</b> 이어보고 싶은 스토리를 고르고</li>
         <li><b>2</b> 다음에 일어날 일을 한 문장으로 쓰면</li>
-        <li><b>3</b> 그 장면이 만들어져 이야기에 이어집니다</li>
+        <li><b>3</b> 그 장면이 만들어져 스토리에 이어져요</li>
       </ol>
     </div>
 
     <div class="sheet-panel hide" data-panel="terms">
       <ul class="terms">
-        <li>입력한 문장은 AI가 영상 장면으로 변환합니다. 입력한 문장이 그대로 재현되지 않을 수 있습니다.</li>
-        <li>입력한 문장과 닉네임은 다른 참여자에게 공개됩니다.</li>
-        <li>따옴표 안에 쓴 문장은 인물의 대사로 처리되어 음성으로 생성됩니다.</li>
-        <li>부적절한 입력은 자동으로 차단됩니다.</li>
-        <li>선택된 장면은 이야기에 편입되며, 이후 참여자가 그 장면에서 이어 씁니다.</li>
-        <li>개인정보는 수집하지 않습니다. 닉네임 입력은 선택이며, 중복 참여 확인용 식별값만 브라우저에 저장됩니다.</li>
+        <li>입력한 문장은 AI가 영상 장면으로 바꿔요. 쓴 문장이 그대로 나오지 않을 수 있어요.</li>
+        <li>입력한 문장과 닉네임은 다른 참여자에게 보여요.</li>
+        <li>따옴표 안에 쓴 문장은 인물의 대사가 되어 목소리로 만들어져요.</li>
+        <li>부적절한 입력은 자동으로 걸러져요.</li>
+        <li>선택된 장면은 스토리에 이어지고, 다음 참여자가 그 장면에서 이어 써요.</li>
+        <li>개인정보는 받지 않아요. 닉네임은 선택이고, 중복 참여 확인용 값만 이 브라우저에 저장돼요.</li>
       </ul>
-      <div class="terms-note">AI가 만든 영상이므로 실제 인물·사건과 관계가 없습니다.</div>
+      <div class="terms-note">AI가 만든 영상이라 실제 인물·사건과 관계가 없어요.</div>
     </div>
 
-    <button class="btn" id="sheetOk">이야기 고르기</button>
+    <button class="btn" id="sheetOk">스토리 고르기</button>
   </div>
 </div>
 
@@ -1264,12 +1523,36 @@
   <div class="pop">
     <h2 id="popTitle" style="margin-bottom:8px">고르기 어려우세요?</h2>
     <div class="sub" id="popSub" style="margin-bottom:20px">
-      아무 이야기나 하나 골라드릴게요.<br>어디서 시작하든 이야기는 이어집니다.
+      아무 스토리나 하나 골라드릴게요.<br>어디서 시작하든 스토리는 이어져요.
     </div>
     <div class="slot hide" id="slot"><div class="reel" id="reel"></div></div>
-    <div class="count-ring hide" id="popCount"><span id="popCountN">10</span><i>초 뒤 자동으로 시작합니다</i></div>
+    <div class="count-ring hide" id="popCount"><span id="popCountN">10</span><i>초 뒤 자동으로 시작해요</i></div>
     <button class="btn" id="popRandom">랜덤으로 시작하기</button>
     <button class="btn-plain" id="popClose">직접 고를게요</button>
+  </div>
+</div>
+
+
+<!-- 첫 문장을 보낸 사람에게 -->
+<div id="rewardWrap" class="hide">
+  <div class="pop-dim"></div>
+  <div class="pop reward">
+    <div class="badge">추카추카</div>
+    <h2 style="margin-bottom:22px">이 스토리를 열었어요</h2>
+    <div class="rewards">
+      <button class="reward-opt" data-reward="room">
+        <b>비밀방 생성</b>
+        <span>초대한 사람끼리만 이어 쓰는 방을 열어요</span>
+      </button>
+      <button class="reward-opt" data-reward="nominate">
+        <b>후보로 올리기</b>
+        <span>이번 라운드 아카데미 후보에 내 문장을 올려요</span>
+      </button>
+      <button class="reward-opt" data-reward="clip">
+        <b>클립 저장</b>
+        <span>만들어진 장면을 내 폰에 저장해요</span>
+      </button>
+    </div>
   </div>
 </div>
 
@@ -1294,7 +1577,7 @@ const $ = s => document.querySelector(s);
 const POLL = 1000;
 
 /* Heroicons (outline, 24px) — 글리프 대신 실제 아이콘 */
-const ICON = {"bolt": "<path fill-rule=\"evenodd\" d=\"M14.615 1.595a.75.75 0 0 1 .359.852L12.982 9.75h7.268a.75.75 0 0 1 .548 1.262l-10.5 11.25a.75.75 0 0 1-1.272-.71l1.992-7.302H3.75a.75.75 0 0 1-.548-1.262l10.5-11.25a.75.75 0 0 1 .913-.143Z\" clip-rule=\"evenodd\"/>", "user": "<path stroke-linecap=\"round\" stroke-linejoin=\"round\" d=\"M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.501 20.118a7.5 7.5 0 0 1 14.998 0A17.933 17.933 0 0 1 12 21.75c-2.676 0-5.216-.584-7.499-1.632Z\"/>", "arrow-right": "<path stroke-linecap=\"round\" stroke-linejoin=\"round\" d=\"M13.5 4.5 21 12m0 0-7.5 7.5M21 12H3\"/>", "plus": "<path stroke-linecap=\"round\" stroke-linejoin=\"round\" d=\"M12 4.5v15m7.5-7.5h-15\"/>"};
+const ICON = {"pencil": "<path d=\"M21.731 2.269a2.625 2.625 0 0 0-3.712 0l-1.157 1.157 3.712 3.712 1.157-1.157a2.625 2.625 0 0 0 0-3.712ZM19.513 8.199l-3.712-3.712-8.4 8.4a5.25 5.25 0 0 0-1.32 2.214l-.8 2.685a.75.75 0 0 0 .933.933l2.685-.8a5.25 5.25 0 0 0 2.214-1.32l8.4-8.4Z\"/><path d=\"M5.25 5.25a3 3 0 0 0-3 3v10.5a3 3 0 0 0 3 3h10.5a3 3 0 0 0 3-3V13.5a.75.75 0 0 0-1.5 0v5.25a1.5 1.5 0 0 1-1.5 1.5H5.25a1.5 1.5 0 0 1-1.5-1.5V8.25a1.5 1.5 0 0 1 1.5-1.5h5.25a.75.75 0 0 0 0-1.5H5.25Z\"/>", "bolt": "<path fill-rule=\"evenodd\" d=\"M14.615 1.595a.75.75 0 0 1 .359.852L12.982 9.75h7.268a.75.75 0 0 1 .548 1.262l-10.5 11.25a.75.75 0 0 1-1.272-.71l1.992-7.302H3.75a.75.75 0 0 1-.548-1.262l10.5-11.25a.75.75 0 0 1 .913-.143Z\" clip-rule=\"evenodd\"/>", "user": "<path stroke-linecap=\"round\" stroke-linejoin=\"round\" d=\"M15.75 6a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0ZM4.501 20.118a7.5 7.5 0 0 1 14.998 0A17.933 17.933 0 0 1 12 21.75c-2.676 0-5.216-.584-7.499-1.632Z\"/>", "arrow-right": "<path stroke-linecap=\"round\" stroke-linejoin=\"round\" d=\"M13.5 4.5 21 12m0 0-7.5 7.5M21 12H3\"/>", "plus": "<path stroke-linecap=\"round\" stroke-linejoin=\"round\" d=\"M12 4.5v15m7.5-7.5h-15\"/>"};
 
 /* 번개 — 채움(solid) 아이콘이라 stroke 가 아니라 fill 로 그린다 */
 const boltIcon = (size = 14) =>
@@ -1302,7 +1585,7 @@ const boltIcon = (size = 14) =>
   `fill="currentColor" aria-hidden="true">${ICON['bolt']}</svg>`;
 
 const icon = (n, size = 14) =>
-  `<svg class="ic" width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" aria-hidden="true">${ICON[n]}</svg>`;
+  `<svg class="ic${n === 'pencil' ? ' bolt' : ''}" width="${size}" height="${size}" viewBox="0 0 24 24" fill="none" ${n === 'pencil' ? 'fill="currentColor"' : 'stroke="currentColor" stroke-width="1.5"'} aria-hidden="true">${ICON[n]}</svg>`;
 
 
 
@@ -1325,7 +1608,7 @@ let lastPhase = null, lastRound = -1;
 
 const VIEWS = ['vChoose','vMine','vMe','vNick','vDetail','vSubmit',
                'vWaiting','vGenerate','vVote','vReveal'];
-// 탭은 이야기에 들어가 있지 않을 때만 보인다. 참여 중에는 흐름에 집중시킨다.
+// 탭은 스토리에 들어가 있지 않을 때만 보인다. 참여 중에는 흐름에 집중시킨다.
 const TAB_VIEWS = {gallery:'vChoose', mine:'vMine', me:'vMe'};
 
 function show(id){
@@ -1333,6 +1616,14 @@ function show(id){
   const onTab = Object.values(TAB_VIEWS).includes(id);
   $('#tabs').classList.toggle('hide', !onTab);
   document.body.classList.toggle('has-tabs', onTab);
+  // 갤러리를 떠나면 팝업도 같이 내린다 — 어떤 화면에도 겹치지 않게
+  if(id !== 'vChoose' && !$('#popWrap').classList.contains('hide')){
+    $('#popWrap').classList.add('hide');
+    if(typeof autoStop === 'function') autoStop();
+  }
+  // 쓰기 화면에서는 페이지가 움직이지 않는다 — 입력칸과 버튼만 남는다
+  document.body.classList.toggle('writing', id === 'vSubmit');
+  if(id === 'vSubmit') syncKeyboard();
   const onCta = id === 'vDetail';
   $('#ctaBar').classList.toggle('hide', !onCta);
   document.body.classList.toggle('has-cta', onCta);
@@ -1341,7 +1632,7 @@ function show(id){
 /* 매체 — 세계마다 그리는 방식이 다르다 */
 const MEDIA = {isekai_anime:'애니메이션', office_horror:'실사', hunter_manhwa:'웹툰'};
 
-/* 고른 이야기(아직 참여 전). 크랙처럼 '무슨 이야기인지 보고 들어간다' */
+/* 고른 스토리(아직 참여 전). 크랙처럼 '무슨 스토리인지 보고 들어간다' */
 let detailId = null;
 
 function renderDetail(st){
@@ -1356,11 +1647,12 @@ function renderDetail(st){
       .filter(Boolean).map(x => `<span>${esc(x)}</span>`).join('');
   $('#dLog').textContent = sc.logline;
   const scenes = lines(sc, t);
-  $('#dCap').textContent = scenes.length ? '지금까지의 이야기' : '아직 아무도 쓰지 않았습니다';
+  $('#dCap').textContent = scenes.length ? '지금까지의 스토리' : '아직 아무도 쓰지 않았어요';
+  // 이 화면에서는 아바타 없이, 문장 끝에 쓴 사람을 붙인다 — 글이 주인공이다
   $('#dScenes').innerHTML = scenes.map(x => `
-    <li>${avatar(x.nick, x.sys)}
-      <span><span class="who">${esc(x.nick)}</span>${esc(x.text)}</span></li>`).join('');
-  $('#ctaWrite').textContent = scenes.length ? '다음 이야기 이어쓰기' : '첫 이야기 쓰기';
+    <li><span class="s">${esc(x.text)}</span>
+      <span class="by">— ${esc(x.nick)}</span></li>`).join('');
+  $('#ctaWrite').textContent = scenes.length ? '다음 스토리 이어쓰기' : '첫 스토리 쓰기';
   return true;
 }
 
@@ -1371,10 +1663,10 @@ $('#ctaWrite')?.addEventListener('click', () => {
 });
 
 /* ── 닉네임 ──
-   이야기를 고른 뒤 한 번만 묻는다. 큰 화면에 문장과 함께 뜨기 때문에
+   스토리를 고른 뒤 한 번만 묻는다. 큰 화면에 문장과 함께 뜨기 때문에
    "내 문장이 저기 있다"를 알아보게 하는 장치다. 건너뛸 수 있다. */
 /* 이름은 기억하되(다음에 자동으로 채워준다), "물어봤다"는 사실은 기억하지 않는다.
-   전시에서는 이야기를 새로 고를 때마다 새 사람일 수 있다 — 매번 물어야 한다.
+   전시에서는 스토리를 새로 고를 때마다 새 사람일 수 있다 — 매번 물어야 한다.
    다만 화면이 잠겼다 돌아온 경우까지 다시 묻지는 않으려고
    sessionStorage 를 쓴다(탭이 살아 있는 동안만 유지). */
 let nick = localStorage.getItem('sk_nick') || '';
@@ -1405,19 +1697,10 @@ function setNick(v){
   editingNick = false;
   localStorage.setItem('sk_nick', v);
   sessionStorage.setItem('sk_nick_asked', '1');
-  paintNickBtn();
 }
-function paintNickBtn(){
-  const b = $('#nickBtn');
-  b.textContent = nick || '이름 없음';
-  b.classList.toggle('hide', !myTrack);
-}
-$('#nickBtn').addEventListener('click', () => {
-  nickAsked = false;
-  sessionStorage.removeItem('sk_nick_asked');
-});
+/* 이름은 마이 탭에서 바꾼다 — 상단 바에는 두지 않는다 */
 
-/* 홈 — 이야기를 지우지 않고 선택 화면으로 돌아간다 */
+/* 홈 — 스토리를 지우지 않고 선택 화면으로 돌아간다 */
 $('#tabs').querySelectorAll('button').forEach(b => {
   b.onclick = () => {
     setTab(b.dataset.tab);
@@ -1426,7 +1709,7 @@ $('#tabs').querySelectorAll('button').forEach(b => {
   };
 });
 
-// 마이 탭에서는 이야기에 들어가 있지 않으므로, 폴링이 화면을 덮지 않게 잠근다.
+// 마이 탭에서는 스토리에 들어가 있지 않으므로, 폴링이 화면을 덮지 않게 잠근다.
 let editingNick = false;
 $('#meEdit').addEventListener('click', () => {
   editingNick = true;
@@ -1444,10 +1727,10 @@ $('#homeBtn').addEventListener('click', () => {
   submittedRound = -1; myVote = null; scenariosDrawn = false;
 });
 
-/* 시나리오 선택 — 아직 이야기가 시작되지 않았을 때만 */
+/* 시나리오 선택 — 아직 스토리가 시작되지 않았을 때만 */
 let scenariosDrawn = false;
 
-// 어느 이야기에 문장을 보냈는지 기억한다. '생성중' 탭의 목록이 된다.
+// 어느 스토리에 문장을 보냈는지 기억한다. '생성중' 탭의 목록이 된다.
 let joined = [];
 try{ joined = JSON.parse(localStorage.getItem('sk_joined') || '[]'); }catch(e){ joined = []; }
 function markJoined(sid){
@@ -1465,7 +1748,7 @@ function setTab(name){
   if(name !== 'gallery'){ myTrack = null; localStorage.removeItem('sk_track'); }
 }
 
-/* 갤러리 탭 — 지금 도는 이야기(오리지널)와 사람들이 시작한 이야기(창작).
+/* 갤러리 탭 — 지금 도는 스토리(오리지널)와 사람들이 시작한 스토리(창작).
    창작은 아직 비어 있다. 누르는 사람이 있는지부터 본다. */
 // 한 라운드에 함께 쓰는 사람 수의 기준값
 const MAX_WRITERS = 4;
@@ -1478,17 +1761,42 @@ function setSeg(name){
     .forEach(b => b.classList.toggle('on', b.dataset.seg === name));
   const made = name === 'made';
   $('#segDesc').textContent = made
-    ? '누구나 이야기의 시작을 쓸 수 있는 곳이에요.'
-    : '슥이 시작을 써둔 이야기예요. 처음이라면 이곳에서 시작해보세요.';
+    ? '누구나 스토리의 시작을 직접 쓸 수 있는 곳이에요.'
+    : '슥이 시작을 써둔 스토리예요. 처음이라면 이곳에서 시작해보세요.';
   $('#scenarios').classList.toggle('hide', made);
-  $('#madeEmpty').classList.toggle('hide', !made);
-  $('#btnOwn').classList.toggle('hide', !made);
+  $('#makeCta').classList.toggle('hide', made);
+  $('#madeWrap').classList.toggle('hide', !made);
+  setTimeout(fitEmpty, 0);
   if(moved) scrollTo(0, 0);
 }
 document.querySelectorAll('#vChoose .seg')
   .forEach(b => b.onclick = () => setSeg(b.dataset.seg));
+// 목록 끝에서 만드는 쪽으로 — 고를 게 없다면 만드는 것이 다음 수순이다
+$('#makeBtn').addEventListener('click', () => setSeg('made'));
 setSeg(seg);
 
+
+
+/* ── 첫 문장 보상 ──
+   아무도 쓰지 않은 스토리를 연 사람에게 하나를 고르게 한다.
+   무엇을 고르는지가 곧 질문의 답이다 —
+   사람들은 '연출(창작)' 과 '후보 확정(영향력)' 과 '클립(소유)' 중 무엇을 원하는가. */
+function openReward(){
+  $('#rewardWrap').classList.remove('hide');
+}
+document.querySelectorAll('.reward-opt').forEach(b => b.onclick = () => {
+  const pick = b.dataset.reward;
+  // 고른 값을 남긴다. 전시 뒤에 세어보면 답이 나온다.
+  try{
+    const log = JSON.parse(localStorage.getItem('sk_rewards') || '[]');
+    log.push({pick, at: new Date().toISOString(), track: myTrack});
+    localStorage.setItem('sk_rewards', JSON.stringify(log));
+  }catch(e){}
+  console.log('[reward]', pick, myTrack);
+  $('#rewardWrap').classList.add('hide');
+  toast({room:'비밀방을 열었어요', nominate:'후보로 올렸어요',
+         clip:'완성되면 저장할 수 있어요'}[pick] || '골랐어요');
+});
 
 /* ── 고르지 못하는 사람 ──
    갤러리에 30초 넘게 머물면 대신 골라주겠다고 묻는다.
@@ -1499,6 +1807,8 @@ let idleTimer = null;
 function popOpen(){
   if(!$('#popWrap').classList.contains('hide')) return;
   if(myTrack || detailId || seg !== 'original') return;
+  // 갤러리가 실제로 떠 있을 때만. 이름 정하기·쓰기 화면 위에 겹쳐 뜨면 안 된다.
+  if($('#vChoose').classList.contains('hide')) return;
   if(document.body.classList.contains('guide-open')) return;
   $('#popWrap').classList.remove('hide');
 }
@@ -1509,7 +1819,7 @@ function popClose(){
 }
 function armIdle(){
   clearTimeout(idleTimer);
-  // 이야기에 들어가 있거나 시트가 열려 있으면 셀 이유가 없다
+  // 스토리에 들어가 있거나 시트가 열려 있으면 셀 이유가 없다
   if(myTrack || detailId) return;
   idleTimer = setTimeout(popOpen, IDLE_MS);
 }
@@ -1525,7 +1835,7 @@ $('#popClose').addEventListener('click', () => {
 });
 
 /* 슬롯이 멈춘 뒤 10초를 센다 —
-   뽑힌 이야기를 보고 마음을 바꿀 틈을 준다. 그대로 두면 알아서 들어간다. */
+   뽑힌 스토리를 보고 마음을 바꿀 틈을 준다. 그대로 두면 알아서 들어간다. */
 const AUTO_SECONDS = 10;
 let autoTimer = null, autoLeft = AUTO_SECONDS;
 
@@ -1572,12 +1882,12 @@ function popReset(){
 $('#popRandom').addEventListener('click', () => {
   const list = story?.scenarios || [];
   if(!list.length) return popClose();
-  // 아직 아무도 쓰지 않은 이야기를 먼저 권한다 — 비어 있는 쪽이 채워진다
+  // 아직 아무도 쓰지 않은 스토리를 먼저 권한다 — 비어 있는 쪽이 채워진다
   const fresh = list.filter(sc => !(lastTracks.find(t => t.id === sc.id)?.canon || []).length);
   const pool = fresh.length ? fresh : list;
   const pick = pool[Math.floor(Math.random() * pool.length)];
 
-  // 굴릴 칸: 전체 목록을 몇 바퀴 돌린 뒤 마지막에 당첨된 이야기를 놓는다
+  // 굴릴 칸: 전체 목록을 몇 바퀴 돌린 뒤 마지막에 당첨된 스토리를 놓는다
   const strip = [];
   for(let i = 0; i < SLOT_LOOPS; i++) strip.push(...list);
   strip.push(pick);
@@ -1628,12 +1938,50 @@ $('#popRandom').addEventListener('click', () => {
   }, 220);
 });
 
+
+/* 탭은 손가락으로도 넘긴다 — 세로 스크롤과 헷갈리지 않게
+   가로로 충분히(60px 이상), 세로로는 조금만(40px 미만) 움직였을 때만 센다. */
+const SEG_ORDER = ['original', 'made'];
+(() => {
+  let x0 = null, y0 = null;
+  const el = $('#vChoose');
+  el.addEventListener('touchstart', e => {
+    const t = e.changedTouches[0];
+    x0 = t.clientX; y0 = t.clientY;
+  }, {passive:true});
+  el.addEventListener('touchend', e => {
+    if(x0 === null) return;
+    const t = e.changedTouches[0];
+    const dx = t.clientX - x0, dy = t.clientY - y0;
+    x0 = y0 = null;
+    if(Math.abs(dx) < 60 || Math.abs(dy) > 40) return;
+    const i = SEG_ORDER.indexOf(seg);
+    const next = SEG_ORDER[i + (dx < 0 ? 1 : -1)];
+    if(next) setSeg(next);
+  }, {passive:true});
+})();
+
+
+/* 빈 화면은 '보이는 자리'의 한가운데에 둔다.
+   고정 높이로 잡으면 아래 탭바에 가려진 만큼 내려앉아 보인다. */
+function fitEmpty(){
+  const bar = $('#tabs');
+  const barTop = bar && !bar.classList.contains('hide')
+    ? bar.getBoundingClientRect().top : innerHeight;
+  document.querySelectorAll('.made-wrap').forEach(w => {
+    if(w.hidden || w.classList.contains('hide')) return;
+    const top = w.getBoundingClientRect().top + scrollY;
+    w.style.minHeight = Math.max(240, barTop + scrollY - top) + 'px';
+  });
+}
+addEventListener('resize', fitEmpty);
+
 function renderScenarios(st){
   if(!story?.scenarios) return;
   const state = {};
   (st?.tracks || []).forEach(t => state[t.id] = t);
 
-  /* 카드는 '이야기 목록이 바뀔 때'만 다시 그린다.
+  /* 카드는 '스토리 목록이 바뀔 때'만 다시 그린다.
      라운드가 돌 때마다 innerHTML 을 새로 쓰면 영상이 통째로 다시 붙고,
      그 순간 높이가 흔들려 브라우저 스크롤 앵커가 화면을 끌어내린다.
      상태 글자는 아래 paintCards() 에서 제자리로 갈아끼운다. */
@@ -1676,7 +2024,7 @@ function renderScenarios(st){
 
 
 
-/* 한 이야기에 쓰인 글 — 도입부(시스템)와 사람들이 이어 쓴 문장을 한 줄기로.
+/* 한 스토리에 쓰인 글 — 도입부(시스템)와 사람들이 이어 쓴 문장을 한 줄기로.
    도입부도 누군가 쓴 글이므로 같은 목록에 놓되, 이름을 sys 로 밝힌다. */
 function lines(sc, t){
   const intro = ((sc?.scenes) || []).map(x => ({
@@ -1698,6 +2046,32 @@ function avatar(nick, sys){
   return `<span class="av" style="background:hsl(${h} 42% 38%)">${esc(ch)}</span>`;
 }
 
+
+/* 긴 문장은 잘라내지 않는다 — 이름은 자리를 지키고 글만 좌우로 흐른다.
+   넘치는 만큼만 움직이고, 끝에서 잠시 멈췄다 되돌아온다. */
+function flow(root){
+  // 폭을 바로 재고, 글꼴·이미지가 늦게 자리 잡는 경우를 위해 한 번 더 잰다.
+  // (rAF 는 탭이 뒤에 있으면 멈춰서 쓰지 않는다)
+  const run = () => root.querySelectorAll('.tx').forEach(box => {
+    const mv = box.querySelector('.mv');
+    if(!mv) return;
+    const over = mv.scrollWidth - box.clientWidth;
+    if(box.classList.contains('flowing')
+       && Math.abs(parseFloat(mv.style.getPropertyValue('--mv')) - over) < 2) return;
+    if(over <= 4){
+      box.classList.remove('flowing');
+      mv.style.animation = '';
+      return;
+    }
+    box.classList.add('flowing');
+    mv.style.setProperty('--mv', over + 'px');
+    // 멀리 갈수록 느리게 — 읽는 속도를 대략 맞춘다
+    mv.style.animation = `flow ${(3 + over / 28).toFixed(1)}s ease-in-out infinite alternate`;
+  });
+  run();
+  setTimeout(run, 400);
+}
+
 /* 카드 위의 살아 있는 값만 갈아끼운다 — 영상은 건드리지 않는다 */
 function paintCards(state){
   story.scenarios.forEach(sc => {
@@ -1708,10 +2082,10 @@ function paintCards(state){
     // 기다리는 중 · 만드는 중처럼 '진행 중'인 상태는 점이 하나씩 찍힌다
     const ph = {idle:'참여를 기다리고 있어요', collect:'지금 접수 중',
                 generate:'장면 만드는 중', vote:'투표 중',
-                reveal:'방금 이어졌습니다'}[t.phase] || '';
+                reveal:'방금 이어졌어요'}[t.phase] || '';
     const dotted = ['idle', 'collect', 'generate', 'vote'].includes(t.phase);
     // 포스터 위 배지 — 셋 중 하나.
-    //   완결   이야기가 끝났다
+    //   완결   스토리가 끝났다
     //   선점하기  아직 아무도 쓰지 않았다 — 첫 문장이 비어 있다
     //   진행중  누군가 이어 쓰는 중이다
     const live = el.querySelector('.live');
@@ -1723,7 +2097,7 @@ function paintCards(state){
     // 오른쪽 위 — 이번 라운드에 몇 명이 같이 쓰고 있는지
     const cnt = el.querySelector('.cnt');
     const num = cnt.querySelector('.n');
-    // 이 이야기에 참여한 총 인원 — 라운드가 넘어가도 0 으로 돌아가지 않는다
+    // 이 스토리에 참여한 총 인원 — 라운드가 넘어가도 0 으로 돌아가지 않는다
     const ct = `${t.writerCount || 0}`;
     if(num.textContent !== ct) num.textContent = ct;
     cnt.classList.toggle('full', (t.writerCount || 0) > 0);
@@ -1749,8 +2123,9 @@ function paintCards(state){
       thread.innerHTML = written.map(x => `
         <li>${avatar(x.nick, x.sys)}
           <b>${esc(x.nick)}</b>
-          <span class="tx">${esc(x.text)}</span></li>`).join('');
+          <span class="tx"><span class="mv">${esc(x.text)}</span></span></li>`).join('');
     }
+    flow(thread);
 
     const st = ph + (t.phase === 'collect' && t.poolCount ? ` · ${t.poolCount}명` : '');
     const stEl = el.querySelector('.go .st');
@@ -1762,7 +2137,7 @@ function paintCards(state){
 $('#btnOwn').onclick = () => {
   ownTaps++;
   console.log('[own-story] tap', ownTaps);
-  toast('준비 중입니다');
+  toast('준비 중이에요');
 };
 let ownTaps = 0;
 
@@ -1781,6 +2156,8 @@ async function post(path, body){
 /* ── 입력 ── */
 const ta = $('#text');
 ta.addEventListener('input', () => {
+  armAidIdle();
+  clearErr();
   const n = ta.value.trim().length;
   const over = n > maxChars;
   $('#count').textContent = `${n} / ${maxChars}`;
@@ -1805,10 +2182,17 @@ function drawAid(sc){
   if(!sug?.sentences?.length){ box.hidden = true; return; }
   box.hidden = false;
   aidUsed = [];
+  // 처음 만난 사람에게만 한 번 — 매번 깜빡이면 잔소리가 된다
+  if(!sessionStorage.getItem('sk_aid_flash')){
+    sessionStorage.setItem('sk_aid_flash', '1');
+    box.classList.remove('boing');
+    box.classList.add('flash');
+    setTimeout(() => box.classList.remove('flash'), 2400);
+  }
 
   const sent = pick(sug.sentences, 1)[0];
   const bs = $('#aidSent');
-  bs.innerHTML = icon('plus', 15) + `<span>${esc(sent)}</span>`;
+  bs.textContent = sent;
   bs.onclick = () => {
     ta.value = sent; ta.dispatchEvent(new Event('input'));
     if(!aidUsed.includes('sentence')) aidUsed.push('sentence');
@@ -1828,8 +2212,53 @@ function drawAid(sc){
   });
 }
 
+
+/* 손이 멈춘 지 10초 — 힌트가 한 번 튀어 오른다.
+   쓰기 어려운 사람에게 '여기 눌러도 된다'를 몸짓으로 알린다. */
+let aidIdleTimer = null;
+function armAidIdle(){
+  clearTimeout(aidIdleTimer);
+  const box = $('#aid');
+  box.classList.remove('boing');
+  if(box.hidden) return;
+  aidIdleTimer = setTimeout(() => {
+    if(!ta.value.trim()) box.classList.add('boing');
+  }, 10000);
+}
+
+
+/* 보내기 전에 한 번 거른다 — 서버가 막을 것을 굳이 왕복시키지 않는다.
+   판단은 서버가 최종적으로 한다(BLOCKLIST 는 화면에 두지 않는다). */
+function localBlock(text){
+  const raw = text.toLowerCase();
+  if(['http://','https://','www.','.com','.net','.kr','@'].some(k => raw.includes(k)))
+    return '링크나 연락처는 보낼 수 없어요';
+  let run = 1;
+  for(let i = 1; i < text.length; i++){
+    run = text[i] === text[i-1] ? run + 1 : 1;
+    if(run >= 6) return '같은 글자가 너무 많이 반복돼요';
+  }
+  return null;
+}
+function showErr(msg){
+  const box = $('#sendErr');
+  box.textContent = msg;
+  box.classList.remove('hide');
+  const mine = document.querySelector('.chain .mine');
+  mine.classList.remove('bad');
+  void mine.offsetWidth;                 // 애니메이션을 다시 태우려면 한 번 비워야 한다
+  mine.classList.add('bad');
+}
+function clearErr(){
+  $('#sendErr').classList.add('hide');
+  document.querySelector('.chain .mine')?.classList.remove('bad');
+}
+
 $('#send').addEventListener('click', async () => {
   if(sending) return;
+  const why = localBlock(ta.value.trim());
+  if(why){ showErr(why); return; }
+  clearErr();
   sending = true;
   $('#send').disabled = true;
   try{
@@ -1840,16 +2269,18 @@ $('#send').addEventListener('click', async () => {
       // 라운드 번호는 서버 응답에서 받는다.
       // lastRound 를 쓰면 폴링이 아직 안 돈 시점에 -1 이 들어가 입력 화면으로 되돌아간다.
       submittedRound = res.round ?? lastRound;
+      if(res.count === 1) setTimeout(openReward, 400);   // 이 라운드의 첫 문장
       lastRound = submittedRound;
       markJoined(myTrack);
       ta.value = ''; $('#count').textContent = `0 / ${maxChars}`;
       show('vWaiting');
     } else {
-      toast(res.message || '보내지 못했습니다');
+      // 서버가 막은 경우 — 문장은 그대로 두고 왜 막혔는지만 알린다
+      showErr(res.message || '보내지 못했어요');
       $('#send').disabled = false;
     }
   } catch(e){
-    toast('보내지 못했습니다');
+    toast('보내지 못했어요');
     $('#send').disabled = false;
   } finally {
     sending = false;
@@ -1857,7 +2288,7 @@ $('#send').addEventListener('click', async () => {
 });
 
 /* ── 처음으로 ──
-   전시에서 실수로 이야기가 날아가면 곤란하므로 두 번 눌러야 실행된다. */
+   전시에서 실수로 스토리가 날아가면 곤란하므로 두 번 눌러야 실행된다. */
 
 
 /* ── 투표 ── */
@@ -1894,12 +2325,12 @@ function joinTrack(sid){
   myTrack = sid;
   localStorage.setItem('sk_track', sid);
   submittedRound = -1; myVote = null;
-  // 새 이야기에 들어갈 때마다 이름을 다시 묻는다 (앞사람 이름을 물려받지 않게)
+  // 새 스토리에 들어갈 때마다 이름을 다시 묻는다 (앞사람 이름을 물려받지 않게)
   nickAsked = false;
   sessionStorage.removeItem('sk_nick_asked');
 }
 
-// 대기 화면에서 다른 이야기로 건너뛰게 한다.
+// 대기 화면에서 다른 스토리로 건너뛰게 한다.
 // 기다림을 다음 참여로 바꾸는 자리다.
 const PHASE_KO = {idle:'기다리는 중', collect:'접수 중', generate:'만드는 중',
                   vote:'투표 중', reveal:'발표 중', finale:'완결'};
@@ -1935,10 +2366,31 @@ function drawOthers(tracks){
   });
 }
 
-// '생성중' — 내가 문장을 보낸 이야기만, 진행 막대와 함께
+
+/* 참여한 스토리도 갤러리와 같은 구분을 쓴다 — 오리지널 / 창작 */
+let mineSeg = 'original';
+function setMineSeg(name){
+  mineSeg = name;
+  $('#vMine').querySelectorAll('.seg')
+    .forEach(b => b.classList.toggle('on', b.dataset.mseg === name));
+  drawMine(lastTracks);
+}
+document.querySelectorAll('#vMine .seg')
+  .forEach(b => b.onclick = () => setMineSeg(b.dataset.mseg));
+
+// '생성중' — 내가 문장을 보낸 스토리만, 진행 막대와 함께
 function drawMine(tracks){
-  const mine = (tracks || []).filter(t => joined.includes(t.id));
-  $('#mineEmpty').hidden = mine.length > 0;
+  // 지금 창작 스토리는 아직 없다 — 그 칸은 비워 둔다
+  const mine = mineSeg === 'made' ? []
+    : (tracks || []).filter(t => joined.includes(t.id));
+  // 빈 화면도 갤러리와 같은 꼴 — 글 한 덩이와 다음 행동 하나
+  const made = mineSeg === 'made';
+  $('#mineWrap').hidden = mine.length > 0;
+  setTimeout(fitEmpty, 0);
+  $('#mineEmpty').innerHTML = made
+    ? '<span class="em">백지 상태예요</span>직접 쓴 스토리가 여기에 모여요.'
+    : '<span class="em">아직 없어요</span>스토리를 골라 한 문장을 보내보세요.';
+
   $('#mineList').innerHTML = mine.map(t => trackRow(t, `보러가기 ${icon('arrow-right',13)}`, true)).join('');
   $('#mineList').querySelectorAll('.orow').forEach(el => {
     el.onclick = () => { setTab('gallery'); joinTrack(el.dataset.id); };
@@ -1948,14 +2400,14 @@ function drawMine(tracks){
 function drawMe(){
   $('#meNick').textContent = nick || '이름 없음';
   $('#meSub').textContent = joined.length
-    ? `${joined.length}개의 이야기에 참여했습니다`
-    : '아직 참여한 이야기가 없습니다';
+    ? `${joined.length}개의 스토리에 참여했어요`
+    : '아직 참여한 스토리가 없어요';
 }
 
 
 /* ── 상영창 ──
    stage.html 의 한 칸을 그대로 폰 위쪽에 들였다.
-   내가 들어간 이야기만 보여주므로 트랙 하나짜리 상태만 들고 있으면 된다. */
+   내가 들어간 스토리만 보여주므로 트랙 하나짜리 상태만 들고 있으면 된다. */
 const mini = {idx:-1, until:0, front:'a', sid:null};
 
 function miniScenes(t){
@@ -2021,10 +2473,8 @@ function renderMini(t){
   const box = $('.mbox');
   const sc = (story?.scenarios || []).find(x => x.id === t.id) || {};
   box.querySelector('.mt').textContent = sc.title || '';
-  const ph = {idle:'대기', collect:'접수', generate:'생성', vote:'투표',
-              reveal:'발표', finale:'완결'}[t.phase] || t.phase;
-  const clock = (t.remaining === null || t.phase === 'generate') ? '' : ` ${t.remaining}s`;
-  box.querySelector('.mph').textContent = `${t.round}R · ${ph}${clock}`;
+  // 상영창 배지는 회차만 — 단계와 남은 시간은 상단 바가 알린다
+  box.querySelector('.mph').textContent = `${t.round}R`;
 
   const genOn = t.phase === 'generate', voteOn = t.phase === 'vote';
   box.querySelector('.mgen').classList.toggle('on', genOn);
@@ -2090,7 +2540,7 @@ function renderMini(t){
 
 /* ── 첫 진입 안내 ──
    처음 온 사람만 한 번 본다. 설명하는 자리는 여기 하나로 모으고,
-   갤러리는 이야기 고르는 일만 하게 둔다. */
+   갤러리는 스토리 고르는 일만 하게 둔다. */
 let tipTimer = null;
 function showTip(){
   const el = $('#fabTip');
@@ -2115,7 +2565,7 @@ document.querySelectorAll('.sheet-segs .seg').forEach(b => b.onclick = () => {
     .forEach(x => x.classList.toggle('on', x === b));
   document.querySelectorAll('.sheet-panel')
     .forEach(x => x.classList.toggle('hide', x.dataset.panel !== name));
-  $('#sheetOk').textContent = name === 'terms' ? '확인했어요' : '이야기 고르기';
+  $('#sheetOk').textContent = name === 'terms' ? '확인했어요' : '스토리 고르기';
 });
 
 function openSheet(){
@@ -2141,9 +2591,24 @@ $('#fab').addEventListener('click', () =>
 
 
 /* 상단 바 — 화면마다 제목이 바뀐다. 제목이 없으면 로고가 그 자리를 지킨다. */
-function setNav(title){
+
+/* 키보드 높이 — 보이는 영역이 줄어든 만큼이 키보드다.
+   이 값으로 보내기 버튼을 키보드 위에 붙인다. */
+const vv = window.visualViewport;
+function syncKeyboard(){
+  const h = vv ? Math.max(0, innerHeight - vv.height - vv.offsetTop) : 0;
+  document.documentElement.style.setProperty('--kb', Math.round(h) + 'px');
+}
+if(vv){
+  vv.addEventListener('resize', syncKeyboard);
+  vv.addEventListener('scroll', syncKeyboard);
+}
+
+function setNav(title, phase){
   $('#navTitle').textContent = title || '';
   $('#navLogo').classList.toggle('hide', !!title);
+  // 상태 칩은 스토리 안에서만 — 갤러리에서는 알릴 상태가 없다
+  $('.phase').classList.toggle('hide', !phase);
 }
 
 /* 바텀 네비 — 내려 읽을 때는 비킨다 */
@@ -2163,7 +2628,7 @@ async function tick(){
       if(fresh){
         // 첫 로드는 '바뀐 것'이 아니다.
         // story 가 null 인 상태와 비교하면 매번 changed 가 되어,
-        // 새로고침할 때마다 들어가 있던 이야기가 풀려버린다.
+        // 새로고침할 때마다 들어가 있던 스토리가 풀려버린다.
         const changed = story
           && JSON.stringify((fresh.scenarios||[]).map(x=>x.id))
           !== JSON.stringify((story.scenarios||[]).map(x=>x.id));
@@ -2180,15 +2645,14 @@ async function tick(){
 
     const t = st.tracks.find(x => x.id === myTrack);
 
-    // 이야기에 들어가 있지 않으면 탭 화면
+    // 스토리에 들어가 있지 않으면 탭 화면
     if(!t){
-      $('#nickBtn').classList.add('hide');
       if(editingNick){ setTimeout(tick, POLL); return; }
       if(detailId && renderDetail(st)){
         $('#homeBtn').classList.remove('hide');
         show('vDetail');
-        setNav(($('#dTitle').textContent) || '이야기');
-        $('#phaseText').textContent = '이야기 보기';
+        setNav(($('#dTitle').textContent) || '스토리');
+        $('#phaseText').textContent = '스토리 보기';
         setTimeout(tick, POLL);
         return;
       }
@@ -2197,33 +2661,32 @@ async function tick(){
       if(tab === 'mine'){
         drawMine(st.tracks);
         show('vMine');
-        setNav('참여한 이야기');
+        setNav('');
         $('#phaseText').textContent = '보관함';
       } else if(tab === 'me'){
         drawMe();
         show('vMe');
-        setNav('마이');
+        setNav('');
         $('#phaseText').textContent = '내 정보';
       } else {
         renderScenarios(st);
         if(idleTimer === null) armIdle();
         show('vChoose');
         setNav('');
-        $('#phaseText').textContent = '이야기 고르기';
+        $('#phaseText').textContent = '스토리 고르기';
       }
       setTimeout(tick, POLL);
       return;
     }
     $('#homeBtn').classList.remove('hide');
-    paintNickBtn();
     renderMini(t);
     clearTimeout(idleTimer);
     $('#popWrap').classList.add('hide');
 
-    // 이야기를 고른 직후 한 번, 이름을 묻는다
+    // 스토리를 고른 직후 한 번, 이름을 묻는다
     if(!nickAsked){
       const scn = (story.scenarios || []).find(x => x.id === t.id) || {};
-      $('#nickCtx').textContent = scn.title ? `〈${scn.title}〉에 참여합니다` : '';
+      $('#nickCtx').textContent = scn.title ? `〈${scn.title}〉에 참여해요` : '';
       if(!$('#vNick').classList.contains('shown')){
         $('#vNick').classList.add('shown');
         nickIn.value = nick;                       // 지난 이름을 미리 채워둔다
@@ -2234,6 +2697,7 @@ async function tick(){
       miniOff();
       show('vNick');
       setNav('이름 정하기');
+      if(document.activeElement !== nickIn) nickIn.focus({preventScroll:true});
       $('#phaseText').textContent = '이름 정하기';
       setTimeout(tick, POLL);
       return;
@@ -2253,13 +2717,13 @@ async function tick(){
     // 트랙이나 라운드가 바뀔 때만 보조를 다시 뽑는다.
     // 폴링마다 다시 그리면 쓰는 도중에 제안이 바뀐다.
     const aidKey = `${t.id}:${t.round}`;
-    if(aidKey !== lastAidKey){ lastAidKey = aidKey; drawAid(sc); }
+    if(aidKey !== lastAidKey){ lastAidKey = aidKey; drawAid(sc); armAidIdle(); }
 
     const label = {idle:'대기', collect:'접수', generate:'생성',
                    vote:'투표', reveal:'발표', finale:'완결'}[t.phase] || t.phase;
     const clock = (t.remaining === null || t.phase === 'generate') ? '' : t.remaining + 's';
     $('#phaseText').innerHTML = `${label} <b>${clock}</b>`;
-    setNav(sc.title || '');
+    setNav(sc.title || '', true);
 
     if(t.phase !== 'generate') genStartedAt = 0;
 
@@ -2267,33 +2731,33 @@ async function tick(){
       if(submittedRound === t.round){
         show('vWaiting');
         $('#waitCount').textContent = t.poolCount > 1
-          ? `${t.poolCount}명이 참여했습니다 · 곧 투표가 열립니다`
-          : '다른 분이 참여하면 투표가 열립니다';
+          ? `${t.poolCount}명이 참여했어요 · 곧 투표가 열려요`
+          : '다른 분이 참여하면 투표가 열려요';
         drawOthers(st.tracks);
       } else {
         show('vSubmit');
         $('#poolNote').textContent = t.phase === 'idle'
-          ? '첫 번째로 보내보세요'
-          : `${t.poolCount}명이 이미 보냈습니다 · ${t.remaining}초 남음`;
+          ? ''
+          : `${t.poolCount}명이 이미 보냈어요 · ${t.remaining}초 남았어요`;
         $('#send').disabled = ta.value.trim().length === 0;
       }
     } else if(t.phase === 'generate'){
       show('vGenerate');
       if(genStartedAt === 0) genStartedAt = performance.now();
       const left = Math.max(0, Math.round(55 - (performance.now() - genStartedAt) / 1000));
-      $('#genLeft').textContent = left ? `약 ${left}초 남음` : '거의 다 됐습니다';
+      $('#genLeft').textContent = left ? `약 ${left}초 남았어요` : '거의 다 됐어요';
     } else if(t.phase === 'vote'){
       show('vVote'); renderCands(t);
     } else if(t.phase === 'finale'){
       show('vReveal');
-      $('#winnerText').textContent = '이야기가 완결됐습니다';
-      $('#winnerVotes').textContent = `${t.canon.length}개의 장면이 이어졌습니다`;
+      $('#winnerText').textContent = '스토리가 완결됐어요';
+      $('#winnerVotes').textContent = `${t.canon.length}개의 장면이 이어졌어요`;
     } else if(t.phase === 'reveal'){
       show('vReveal');
       const w = t.candidates.find(c => c.id === t.winner);
       $('#winnerText').textContent = w ? w.text : '';
       $('#winnerVotes').textContent = !w ? ''
-        : t.contested ? `${w.votes}표로 선택됐습니다` : '단독 참여로 바로 이어집니다';
+        : t.contested ? `${w.votes}표로 선택됐어요` : '단독 참여로 바로 이어져요';
     }
   }catch(e){
     $('#phaseText').textContent = '연결 끊김';
