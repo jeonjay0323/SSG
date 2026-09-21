@@ -14,7 +14,8 @@
     "candidates": 3,
     "finaleSeconds": 25,
     "collectExtendSeconds": 12,
-    "collectMaxSeconds": 45
+    "collectMaxSeconds": 45,
+    "cooldownSeconds": 30
   },
   "_note": "시나리오는 scenarios/<id>.json, 연출 프롬프트는 worlds/<id>.json 에 있다. 각 시나리오가 world 를 하나 가리키며, 시나리오마다 다른 월드를 써도 된다.",
   "scenarios": [
